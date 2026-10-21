@@ -1,0 +1,93 @@
+package dev.pixie
+
+public const val SIZE: Int = 16
+public const val VERSION: Int = 1
+
+/** Palette indices used in grids. */
+internal object Cell {
+    const val CLEAR = 0
+    const val BODY = 1
+    const val OUTLINE = 2
+    const val SHADE = 3
+    const val LIGHT = 4
+    const val ACCENT = 5
+    const val INK = 6
+    const val WHITE = 7
+}
+
+public enum class Mood(public val key: String) {
+    Neutral("neutral"), Happy("happy"), Sad("sad"), Surprised("surprised"), Thinking("thinking"), Sleepy("sleepy");
+
+    public companion object {
+        /** Friendly names for moods the sprite sheet does not have yet. */
+        private val aliases = mapOf(
+            "worried" to Sad, "angry" to Sad, "excited" to Happy, "love" to Happy,
+            "smug" to Happy, "confused" to Thinking, "shy" to Sleepy,
+        )
+
+        public fun named(name: String?): Mood? =
+            if (name == null) null else entries.firstOrNull { it.key == name } ?: aliases[name]
+    }
+}
+
+public enum class Template(public val key: String) { Blob("blob"), Box("box"), Wedge("wedge"), Gem("gem") }
+public enum class EyeStyle(public val key: String) { Dot("dot"), Big("big") }
+public enum class Preset(public val key: String) { Gameboy("gameboy"), Mono("mono"), Amber("amber") }
+
+public data class Traits(public val roundness: Int, public val heft: Int, public val energy: Int, public val chaos: Int)
+
+public data class Anchors(public val eyeY: Int, public val eyeInner: Int, public val mouthY: Int)
+
+/** -1, 0 or 1 on each axis. */
+public data class Gaze(public val x: Int = 0, public val y: Int = 0)
+
+public data class Pose(
+    public val mood: Mood = Mood.Neutral,
+    public val gaze: Gaze = Gaze(),
+    public val blink: Boolean = false,
+    /** Shift the whole mascot up one pixel (idle bob). */
+    public val bob: Boolean = false,
+)
+
+public class Sprite internal constructor(
+    public val version: Int,
+    public val seed: UInt,
+    /** Normalized text this sprite was made from. */
+    public val text: String,
+    public val traits: Traits,
+    public val template: Template,
+    public val eyeStyle: EyeStyle,
+    public val anchors: Anchors,
+    /** 16x16 palette indices, row by row, without a face. */
+    public val body: IntArray,
+    /** 8 CSS colors indexed by palette index; index 0 is "" (clear). */
+    public val colors: List<String>,
+    public val colorName: String,
+) {
+    /** Body with the neutral face. This is what the golden file hashes. */
+    public var grid: IntArray = body
+        internal set
+
+    /** A short description for accessibility. */
+    public val summary: String
+        get() {
+            val shape = when (template) {
+                Template.Blob -> "round"
+                Template.Box -> "boxy"
+                Template.Wedge -> "wedge-shaped"
+                Template.Gem -> "crystal-shaped"
+            }
+            val e = traits.energy
+            val mood = if (e < 35) "calm" else if (e < 65) "lively" else "hyper"
+            return "A $shape, $mood $colorName pixel mascot"
+        }
+}
+
+internal fun at(g: IntArray, x: Int, y: Int): Int =
+    if (x < 0 || y < 0 || x >= SIZE || y >= SIZE) 0 else g[y * SIZE + x]
+
+internal fun put(g: IntArray, x: Int, y: Int, v: Int) {
+    if (x in 0 until SIZE && y in 0 until SIZE) g[y * SIZE + x] = v
+}
+
+internal fun clamp(v: Int, lo: Int = 0, hi: Int = 100): Int = if (v < lo) lo else if (v > hi) hi else v

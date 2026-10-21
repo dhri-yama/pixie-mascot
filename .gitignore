@@ -10,3 +10,4 @@ dist/
 build/
 .gradle/
 .claude/settings.local.json
+.kotlin/
