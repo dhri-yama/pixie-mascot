@@ -29,6 +29,13 @@ not frozen. Not published to any registry. CI workflows exist but have never run
    preset, `version`. Do not add appearance options without asking.
 10. **Swift and Kotlin contain no logic that is not in the spec.** They are ports, proven only by `spec/golden.json`.
 
+## Motion and shapes
+
+22 body shapes in three families (soft, sharp, sinuous) and 6 marks; a snake is built whole from circles and is not
+mirrored. The pose carries `lift, dx, lean, squash, wave, amp` (integers) and `applyMotion` in `compose` applies them;
+motion tables live in `spec/motion.json` and reach Swift and Kotlin through `pnpm gen:native`. The behavior engine picks a
+motion style from the sprite's body shape, so it needs `template` (all three ports and the DOM glue pass it).
+
 ## Smooth rendering (web only, experimental)
 
 `toSmoothSVG` and the `smooth` option redraw the same 32x32 grid as rounded vector shapes (trace each color
@@ -61,7 +68,7 @@ pnpm build                  # core + react (also the script-tag bundle)
 pnpm --filter @pixie/site build
 pnpm --filter @pixie/lab dev    # :5174
 pnpm --filter @pixie/site dev   # :5175
-swift test                  # repo root. Uses Swift Testing (works with Command Line Tools)
+swift test                  # repo root. Uses Swift Testing (see the quirk below if the macro plugin is "not found")
 (cd packages/kotlin && gradle test)
 pnpm golden:update          # rewrite spec/golden.json (draft versions only)
 pnpm gen:native             # regenerate Swift/Kotlin data after editing spec/
@@ -97,7 +104,8 @@ pnpm variety [count]        # collision rate
 ## Environment quirks seen so far
 
 - `swift test` with only the Command Line Tools sometimes fails with "plugin for module 'TestingMacros' not found"
-  on every other run, and passing extra environment variables triggers it. It is a toolchain quirk; rerun.
+  on some runs, and passing extra environment variables triggers it. It is a toolchain quirk. Reliable way: loop
+  `swift build --build-tests` until it prints "Build complete", then `swift test --skip-build`.
   SwiftUI's `@State` macro plugin is also missing there, so avoid `@State` in package code (use `@StateObject`).
 - No iOS SDK and no Android SDK on the dev machine: iOS and Android targets are unverified.
 - Foundation's JSON parser rejects lone surrogates, so golden inputs must be valid Unicode (the TS unit tests cover lone surrogates).
