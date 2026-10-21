@@ -127,8 +127,8 @@ caught by its render test.
 ## Smooth rendering (2026-10-22, after review)
 
 The owner still found 32x32 a bit blocky, so a smooth renderer was added on top of the same grid for a side-by-side
-comparison (lab and site playground). Web only; not in the golden file; not ported to Swift/Kotlin. Waiting for the
-owner's verdict before porting or making it the default.
+comparison (lab and site playground). Web only; not in the golden file; not ported to Swift/Kotlin. Verdict: the owner prefers the pixel look, so pixel stays the
+default everywhere and smooth stays an optional web-only style (not ported).
 
 ## Final verification (2026-10-22)
 

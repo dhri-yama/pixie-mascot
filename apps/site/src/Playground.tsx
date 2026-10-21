@@ -7,7 +7,7 @@ import { CopyButton, Meter } from "./ui";
 const TRY = ["bubbanbbebb", "jsakkkwaakiyy", "sleepy cloud", "razor wire", "moon", "zzkt", "your name"];
 const PALETTES: Array<PresetName | ""> = ["", "gameboy", "mono", "amber"];
 type Look = "pixel" | "smooth" | "both";
-const LOOKS: Look[] = ["both", "pixel", "smooth"];
+const LOOKS: Look[] = ["pixel", "smooth", "both"];
 
 const initialText = (): string => new URLSearchParams(location.search).get("t") ?? "bubbanbbebb";
 
@@ -16,7 +16,7 @@ export function Playground(): ReactNode {
   const [mood, setMood] = useState<Mood | null>(null);
   const [palette, setPalette] = useState<PresetName | "">("");
   const [platform, setPlatform] = useState<Platform>("react");
-  const [look, setLook] = useState<Look>("both");
+  const [look, setLook] = useState<Look>("pixel");
 
   const sprite = useMemo(() => generate(text, { palette: palette || undefined }), [text, palette]);
 
