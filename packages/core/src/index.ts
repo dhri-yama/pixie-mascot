@@ -10,3 +10,7 @@ export {
   type Anchors, type EyeStyle, type GenerateOptions, type Gaze, type Grid, type Mood,
   type Pose, type PresetName, type Sprite, type Template,
 } from "./types";
+export {
+  createBehavior, snapGaze,
+  type Attention, type AttentionMode, type Behavior, type BehaviorOptions, type Vec,
+} from "./behavior";
