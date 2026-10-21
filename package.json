@@ -9,8 +9,9 @@
     "build": "pnpm -r --filter './packages/*' build",
     "test": "vitest run",
     "typecheck": "pnpm -r typecheck",
-    "golden:update": "node --experimental-strip-types scripts/golden.ts",
-    "variety": "node --experimental-strip-types scripts/variety.ts"
+    "golden:update": "tsx scripts/golden.ts",
+    "variety": "tsx scripts/variety.ts",
+    "gen:native": "tsx scripts/gen-native.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

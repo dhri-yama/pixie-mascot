@@ -1,7 +1,7 @@
 // Regenerates spec/golden.json. v1 is a draft until VERSIONS.md says frozen; after that, only add
 // a new version's entries, never rewrite an old one.
 import { writeFileSync } from "node:fs";
-import { MOODS, compose, generate, type Grid } from "../packages/core/src";
+import { MOODS, compose, createBehavior, generate, toSVG, type AttentionMode, type Grid } from "../packages/core/src";
 import { fnv1a, utf8 } from "../packages/core/src/hash";
 import { createRng } from "../packages/core/src/rng";
 
@@ -22,7 +22,7 @@ const PHRASES = [
   "sleepy cloud", "angry wasp", "a tiny round pebble", "razor wire", "soft pillow", "thunderbolt",
   "the quick brown fox jumps over the lazy dog",
   "café", "café", "Éclair", "naïve", "你好", "こんにちは", "привет",
-  "\u{1F600}", "\u{1F600}\u{1F601}\u{1F602}", "🚀 rocket", "\ud800", "tab\tand\nnewline",
+  "\u{1F600}", "\u{1F600}\u{1F601}\u{1F602}", "🚀 rocket", "\ufffd", "tab\tand\nnewline",
   "x".repeat(300), "bubba ".repeat(40), "A".repeat(128), "A".repeat(129),
 ];
 
@@ -57,11 +57,70 @@ export function entry(input: string) {
     body: gridHash(s.body),
     moods,
     pose: gridHash(compose(s, { mood: "thinking", gaze: { x: 1, y: -1 }, blink: true, bob: true })),
+    svg: hex(fnv1a(utf8(toSVG(s.grid, s.colors)))),
   };
 }
 
+/** Scripted input for the behavior traces. Ports replay it step by step (100 ms per step). */
+export const BEHAVIOR_SCRIPT: Array<{ t: number; op: string; x?: number; y?: number; mood?: string; ms?: number }> = [
+  { t: 1000, op: "lookAt", x: 1, y: 0 },
+  { t: 6000, op: "lookAt", x: -1, y: 0.5 },
+  { t: 9000, op: "lookAt", x: 0.2, y: -1 },
+  { t: 12000, op: "lookAt" },
+  { t: 20000, op: "focus", x: -0.8, y: 0.9 },
+  { t: 22000, op: "focus" },
+  { t: 26000, op: "react", mood: "happy", ms: 900 },
+  { t: 30000, op: "setMood", mood: "sad" },
+  { t: 34000, op: "setMood" },
+  { t: 40000, op: "poke" },
+  { t: 41000, op: "lookAt", x: 1, y: 1 },
+  { t: 41500, op: "react", mood: "thinking", ms: 3000 },
+  { t: 44000, op: "clearReaction" },
+];
+export const BEHAVIOR_STEPS = 900; // 90 seconds
+
+export const BEHAVIOR_CASES: Array<{ text: string; attention: AttentionMode; reducedMotion: boolean; sleepAfterMs: number }> = [
+  { text: "bubbanbbebb", attention: "sometimes", reducedMotion: false, sleepAfterMs: 30000 },
+  { text: "jsakkkwaakiyy", attention: "sometimes", reducedMotion: false, sleepAfterMs: 30000 },
+  { text: "moon", attention: "always", reducedMotion: false, sleepAfterMs: 0 },
+  { text: "zzkt", attention: "never", reducedMotion: false, sleepAfterMs: 30000 },
+  { text: "sleepy cloud", attention: "sometimes", reducedMotion: true, sleepAfterMs: 30000 },
+  { text: "sagar", attention: "sometimes", reducedMotion: false, sleepAfterMs: 8000 },
+];
+
+export function behaviorTrace(c: (typeof BEHAVIOR_CASES)[number]): { hash: string; asleepSteps: number; blinks: number } {
+  const s = generate(c.text);
+  const b = createBehavior({ seed: s.seed, traits: s.traits, attention: c.attention, reducedMotion: c.reducedMotion, sleepAfterMs: c.sleepAfterMs });
+  let trace = "";
+  let asleepSteps = 0;
+  let blinks = 0;
+  let next = 0;
+  for (let i = 0; i < BEHAVIOR_STEPS; i++) {
+    const t = i * 100;
+    while (next < BEHAVIOR_SCRIPT.length && BEHAVIOR_SCRIPT[next]!.t <= t) {
+      const e = BEHAVIOR_SCRIPT[next++]!;
+      if (e.op === "lookAt") b.lookAt(e.x === undefined ? null : { x: e.x, y: e.y! });
+      else if (e.op === "focus") b.focus(e.x === undefined ? null : { x: e.x, y: e.y! });
+      else if (e.op === "react") b.react(e.mood as never, e.ms);
+      else if (e.op === "setMood") b.setMood((e.mood as never) ?? null);
+      else if (e.op === "poke") b.poke();
+      else if (e.op === "clearReaction") b.clearReaction();
+    }
+    const p = b.tick(100);
+    if (b.attention === "asleep") asleepSteps++;
+    if (p.blink) blinks++;
+    trace += `${p.mood},${p.gaze.x},${p.gaze.y},${p.blink ? 1 : 0},${p.bob ? 1 : 0},${b.attention};`;
+  }
+  return { hash: hex(fnv1a(utf8(trace))), asleepSteps, blinks };
+}
+
 if (process.argv[1]?.endsWith("golden.ts")) {
-  const out = { version: 1, count: 0, entries: buildInputs().map(entry) };
+  const out = {
+    version: 1,
+    count: 0,
+    entries: buildInputs().map(entry),
+    behavior: { stepMs: 100, steps: BEHAVIOR_STEPS, script: BEHAVIOR_SCRIPT, cases: BEHAVIOR_CASES.map((c) => ({ ...c, ...behaviorTrace(c) })) },
+  };
   out.count = out.entries.length;
   writeFileSync(new URL("../spec/golden.json", import.meta.url), JSON.stringify(out, null, 1) + "\n");
   console.log(`wrote ${out.count} entries`);
