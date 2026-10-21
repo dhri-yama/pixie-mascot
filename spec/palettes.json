@@ -1,0 +1,36 @@
+{
+  "_doc": "Curated color pool. Groups: pastel (soft, calm), vivid (energetic), deep (sharp, calm). Six entries per group; the order is part of the algorithm. Ink uses 'outline'; white is fixed.",
+  "white": "#f6f6f2",
+  "groups": {
+    "pastel": [
+      { "name": "mint",      "body": "#8fe3b5", "shade": "#62c18f", "light": "#c4f5d9", "outline": "#1f4d3a", "accent": "#ff9fb2" },
+      { "name": "peach",     "body": "#ffb98f", "shade": "#e8905f", "light": "#ffdcc4", "outline": "#5a2d1c", "accent": "#7fd6c2" },
+      { "name": "lilac",     "body": "#c4a8ff", "shade": "#9b7fe0", "light": "#e4d7ff", "outline": "#33235f", "accent": "#ffa6c9" },
+      { "name": "sky",       "body": "#93d2ff", "shade": "#62a9e6", "light": "#cdeaff", "outline": "#1e3a5c", "accent": "#ffb1a1" },
+      { "name": "butter",    "body": "#ffe48a", "shade": "#e3bd4e", "light": "#fff3c2", "outline": "#5a4310", "accent": "#ff9a9a" },
+      { "name": "rose",      "body": "#ffa3c0", "shade": "#e0709a", "light": "#ffd0e0", "outline": "#5e1f3c", "accent": "#8fd9ff" }
+    ],
+    "vivid": [
+      { "name": "lime",      "body": "#8be04a", "shade": "#5fb52b", "light": "#c5f58f", "outline": "#234510", "accent": "#ff6b6b" },
+      { "name": "orange",    "body": "#ff8a2a", "shade": "#d1650f", "light": "#ffc085", "outline": "#5a2605", "accent": "#3fc7ff" },
+      { "name": "violet",    "body": "#8b5cff", "shade": "#6238d1", "light": "#bfa4ff", "outline": "#1f1050", "accent": "#ffd23f" },
+      { "name": "blue",      "body": "#2f9bff", "shade": "#1b73d1", "light": "#8ccaff", "outline": "#0b2a52", "accent": "#ffdf5a" },
+      { "name": "magenta",   "body": "#ff3fa4", "shade": "#c91f7c", "light": "#ff9dd0", "outline": "#4d0b2e", "accent": "#6bffd8" },
+      { "name": "teal",      "body": "#1fd1b4", "shade": "#0f9e88", "light": "#84f0dc", "outline": "#08403a", "accent": "#ffb347" }
+    ],
+    "deep": [
+      { "name": "crimson",   "body": "#e03a4e", "shade": "#a8233a", "light": "#f58a96", "outline": "#3a0b16", "accent": "#ffe066" },
+      { "name": "indigo",    "body": "#4a5bd6", "shade": "#323f9e", "light": "#96a2f2", "outline": "#121a52", "accent": "#7dffb3" },
+      { "name": "green",     "body": "#2e9e5b", "shade": "#1e7442", "light": "#7bd49b", "outline": "#0b2e1a", "accent": "#ffd166" },
+      { "name": "plum",      "body": "#8e3fa8", "shade": "#682a7e", "light": "#c98be0", "outline": "#2a0f35", "accent": "#7dffd1" },
+      { "name": "rust",      "body": "#c4562a", "shade": "#8f3a17", "light": "#eda17f", "outline": "#3a1507", "accent": "#8ae1ff" },
+      { "name": "slate",     "body": "#5f7a96", "shade": "#435a73", "light": "#a6bbd0", "outline": "#172230", "accent": "#ffab5e" }
+    ]
+  },
+  "presets": {
+    "_doc": "Four colors, darkest to lightest. Roles: outline+ink -> c0, shade -> c1, body+accent -> c2, light+white -> c3.",
+    "gameboy": ["#0f380f", "#306230", "#8bac0f", "#9bbc0f"],
+    "mono":    ["#111111", "#555555", "#aaaaaa", "#eeeeee"],
+    "amber":   ["#2b1700", "#7a4a00", "#ff9d00", "#ffd37a"]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "_doc": "Eye patterns are for the LEFT eye in a 3x3 box whose last column is the inner column (next to the center axis); the right eye is the mirror image. Chars: k ink, w white, p pupil (ink, moves with gaze), a accent, '.' clear. Mouths are centered, even width. Props are drawn at absolute x,y.",
+  "eyes": {
+    "dot": {
+      "neutral":   ["...", ".pp", ".pp"],
+      "happy":     ["...", ".k.", "k.k"],
+      "sad":       ["..k", ".pp", ".pp"],
+      "surprised": ["kkk", "kwk", "kkk"],
+      "thinking":  ["pp.", "pp.", "..."],
+      "sleepy":    ["...", "...", "kkk"],
+      "blink":     ["...", "...", "kkk"]
+    },
+    "big": {
+      "neutral":   ["www", "wpw", "www"],
+      "happy":     [".k.", "k.k", "..."],
+      "sad":       ["..k", "wpw", "www"],
+      "surprised": ["kkk", "kwk", "kkk"],
+      "thinking":  ["k..", "wpw", "www"],
+      "sleepy":    ["...", "...", "kkk"],
+      "blink":     ["...", "...", "kkk"]
+    }
+  },
+  "mouths": {
+    "neutral":   [],
+    "happy":     ["k..k", ".kk."],
+    "sad":       [".kk.", "k..k"],
+    "surprised": ["kk", "kk"],
+    "thinking":  ["kk"],
+    "sleepy":    []
+  },
+  "props": {
+    "neutral":   null,
+    "happy":     null,
+    "sad":       null,
+    "surprised": { "x": 13, "y": 0, "rows": ["k", "k", ".", "k"] },
+    "thinking":  { "x": 12, "y": 0, "rows": ["..k", ".k.", "k.."] },
+    "sleepy":    { "x": 12, "y": 0, "rows": ["kk.", ".k.", ".kk"] }
+  }
+}
