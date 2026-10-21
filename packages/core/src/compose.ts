@@ -63,12 +63,12 @@ export function compose(sprite: Sprite, pose: Pose = {}): Grid {
     g.fill(CLEAR, SIZE * (SIZE - 1));
   }
 
-  // Props float in the top-right corner and ignore the body.
+  // Props float in the top-right corner in the accent color so they show on any background.
   const prop = PROPS[mood];
   if (prop) {
     for (let i = 0; i < prop.rows.length; i++) {
       const row = prop.rows[i] ?? "";
-      for (let j = 0; j < row.length; j++) if (row[j] !== ".") put(g, prop.x + j, prop.y + i, INK);
+      for (let j = 0; j < row.length; j++) if (row[j] !== ".") put(g, prop.x + j, prop.y + i, ACCENT);
     }
   }
   return g;

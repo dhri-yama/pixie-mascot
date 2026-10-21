@@ -12,7 +12,7 @@
     },
     "big": {
       "neutral":   ["www", "wpw", "www"],
-      "happy":     [".k.", "k.k", "..."],
+      "happy":     ["...", ".k.", "k.k"],
       "sad":       ["..k", "wpw", "www"],
       "surprised": ["kkk", "kwk", "kkk"],
       "thinking":  ["k..", "wpw", "www"],

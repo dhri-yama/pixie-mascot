@@ -148,6 +148,29 @@ function pickPart(slot: Part["slot"], wantSoft: boolean, rolls: PartRolls, chaos
   return pool[rolls.part % pool.length];
 }
 
+/**
+ * Pick the widest eye spacing (at most `pref`, at least 1) whose left eye sits fully on the body,
+ * moving the eyes down up to two rows when the body is too narrow at the preferred row.
+ */
+function fitEyes(fill: Grid, style: EyeStyle, eyeY0: number, pref: number): { eyeY: number; eyeInner: number } {
+  const offsets = style === "big" ? [0, 1, 2] : [1, 2];
+  // First try to keep one body pixel between the eye and the edge, then settle for touching it.
+  for (const margin of [1, 0]) {
+    for (let dy = 0; dy <= 2; dy++) {
+      for (let ei = pref; ei >= 1; ei--) {
+        const lx = 7 - ei - 2;
+        let ok = true;
+        for (const r of offsets) {
+          for (const c of offsets) if (at(fill, lx + c, eyeY0 + dy + r) === CLEAR) ok = false;
+          if (margin === 1 && at(fill, lx + offsets[0]! - 1, eyeY0 + dy + r) === CLEAR) ok = false;
+        }
+        if (ok) return { eyeY: eyeY0 + dy, eyeInner: ei };
+      }
+    }
+  }
+  return { eyeY: eyeY0, eyeInner: 1 };
+}
+
 export function generate(text: string, options: GenerateOptions = {}): Sprite {
   const version = options.version ?? VERSION;
   if (version !== VERSION) throw new RangeError(`Unsupported Pixie algorithm version: ${version}`);
@@ -253,13 +276,18 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
   // Face anchors.
   const eyeInnerRoll = rng.int(2);
   const eyeStyleRoll = rng.int(40);
-  const eyeY = y0 + idiv(bh * 30, 100) + (template === "gem" ? 1 : 0);
-  const anchors: Anchors = {
-    eyeY,
-    eyeInner: 1 + eyeInnerRoll + (half === 6 ? 1 : 0),
-    mouthY: Math.min(eyeY + 4, y0 + bh - 2),
-  };
   const eyeStyle: EyeStyle = clamp(roundness + eyeStyleRoll - 20) >= 50 ? "big" : "dot";
+  const fit = fitEyes(
+    snap2,
+    eyeStyle,
+    y0 + idiv(bh * 30, 100) + (template === "gem" ? 1 : 0),
+    1 + eyeInnerRoll + (half === 6 ? 1 : 0),
+  );
+  const anchors: Anchors = {
+    eyeY: fit.eyeY,
+    eyeInner: fit.eyeInner,
+    mouthY: Math.min(fit.eyeY + 4, y0 + bh - 2),
+  };
 
   // Colors.
   const entryRoll = rng.next();
