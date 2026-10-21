@@ -4,8 +4,10 @@ Type a word or a sentence, get a retro pixel-art mascot. The **sound** of the te
 soft sounds (`bubbanbbebb`) make round, cute creatures; sharp sounds (`jsakkkwaakiyy`) make spiky ones.
 Same text and same algorithm version give the same mascot on every platform.
 
-Mascots have six moods (neutral, happy, sad, surprised, thinking, sleepy), blink, bob, follow the pointer
-some of the time and look away the rest, fall asleep when ignored, and can react to the UI around them.
+Mascots have six moods (neutral, happy, sad, surprised, thinking, sleepy), blink often (sometimes twice), and move
+in a way that fits their body: round ones bounce and squash, tall ones waddle, clouds drift, crystals pulse and snakes
+slither. They follow the pointer some of the time and look away the rest, jump when startled, fall asleep when
+ignored, and can react to the UI around them.
 
 > Status: working and tested, **not published yet**. Package names (`@pixie/core`, `@pixie/react`,
 > `dev.pixie`, the Swift package) are placeholders until a registry check. Algorithm v1 is still a
@@ -98,12 +100,15 @@ Only a few, on purpose. Users do not tune the look.
 1. Normalize the text and hash it (FNV-1a) into a seed for a small integer-only PRNG (mulberry32).
 2. Each letter carries a bit of roundness, sharpness, weight and rarity ([spec/letters.json](spec/letters.json)).
    The totals become four traits 0..100: **roundness, heft, energy, chaos** ([spec/traits.md](spec/traits.md)).
-3. The traits pick one of 13 body shapes (soft: ball, egg, pear, capsule, dome, cloud, head-on-body, box; sharp: star,
-   crystal, wedge, hexagon, kite) with its own proportions, then parts (ears, horns, wings, arms, feet, claws), a tail
-   on one side, a marking (belly patch, spots, stripes, cheeks or a forehead gem), eyes, and a palette from a curated
-   pool. The left half is built and mirrored; chaos breaks the symmetry.
-4. A behavior state machine ([spec/behavior.md](spec/behavior.md)) adds blinking, bobbing, attention
-   (follow, wander, focus, asleep) and moods. It is pure and seeded, so it is testable and portable.
+3. The traits pick one of 22 body shapes with their own proportions: soft (ball, egg, pear, capsule, dome, cloud,
+   head-on-body, box, mushroom, bell, drop, jellyfish), sharp (star, crystal, wedge, hexagon, kite, shield,
+   hourglass) and sinuous (coiled snake, cobra, caterpillar). Text full of hissing, slithering letters (s z x h w y l)
+   often becomes a snake. Then come parts (ears, horns, wings, arms, feet, claws), a tail on one side, a marking
+   (belly patch, spots, stripes, cheeks or a forehead gem), eyes, and a palette from a curated pool. The left half is
+   built and mirrored; chaos breaks the symmetry; snakes are drawn whole.
+4. A behavior state machine ([spec/behavior.md](spec/behavior.md)) adds blinking, a motion style per body shape
+   (bounce, sway, waddle, slither, float, pulse: squash and stretch, lean, wave, hop), jumps and droops for moods,
+   attention (follow, wander, focus, asleep) and moods. It is pure and seeded, so it is testable and portable.
 
 Phonetics only: meaning is not used (`razor wire` sounds round, so it looks round). A meaning-aware mode is a
 possible v2.

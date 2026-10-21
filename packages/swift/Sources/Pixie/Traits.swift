@@ -8,7 +8,7 @@ func computeTraits(_ norm: String, _ rng: Rng) -> Traits {
     let big = d.map { $0 % 61 - 30 }
 
     var round = 0, sharp = 0, heavy = 0, light = 0, rare = 0
-    var n = 0, cc = 0, mask = 0
+    var n = 0, cc = 0, mask = 0, slinky = 0
     var prevConsonant = false
     for scalar in norm.unicodeScalars {
         let code = Int(scalar.value)
@@ -19,6 +19,7 @@ func computeTraits(_ norm: String, _ rng: Rng) -> Traits {
         let row = SpecData.letters[code - 97]
         round += row[0]; sharp += row[1]; heavy += row[2]; light += row[3]; rare += row[4]
         n += 1
+        if [115, 122, 120, 104, 119, 121, 108].contains(code) { slinky += 1 } // s z x h w y l
         mask |= 1 << (code - 97)
         let consonant = ![97, 101, 105, 111, 117].contains(code)
         if consonant && prevConsonant { cc += 1 }
@@ -26,7 +27,7 @@ func computeTraits(_ norm: String, _ rng: Rng) -> Traits {
     }
 
     if n == 0 {
-        return Traits(roundness: clamp(50 + big[0]), heft: clamp(50 + big[1]), energy: clamp(50 + big[2]), chaos: clamp(50 + big[3]))
+        return Traits(roundness: clamp(50 + big[0]), heft: clamp(50 + big[1]), energy: clamp(50 + big[2]), chaos: clamp(50 + big[3]), slink: 0)
     }
 
     let distinct = mask.nonzeroBitCount
@@ -48,5 +49,5 @@ func computeTraits(_ norm: String, _ rng: Rng) -> Traits {
     let variety = distinct * 100 / (n + 2)
     let chaos = clamp(variety + rareD / 2 + (energy - 50) / 4 + jc)
 
-    return Traits(roundness: roundness, heft: heft, energy: energy, chaos: chaos)
+    return Traits(roundness: roundness, heft: heft, energy: energy, chaos: chaos, slink: slinky * 100 / n)
 }

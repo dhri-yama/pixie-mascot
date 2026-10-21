@@ -1,0 +1,13 @@
+{
+  "_doc": "Idle and reaction motion. Each table has 8 steps and loops. lift: rows up (0..3). dx: columns right. lean: tilt around the feet, positive leans right at the top. squash: positive presses the body shorter, negative stretches it taller. wave: 'step' ripples a sideways wave down the body, 'half' does it at half speed, 'none' does not. amp: wave size in columns (0..2). Which style a mascot uses comes from its body shape (see motionFor in the spec).",
+  "styles": {
+    "bounce":  { "lift": [0, 2, 3, 3, 2, 0, 0, 0], "dx": [0, 0, 0, 0, 0, 0, 0, 0], "lean": [0, 0, 0, 0, 0, 0, 0, 0], "squash": [1, -1, -1, 0, 0, 2, 1, 0], "wave": "none", "amp": 0 },
+    "sway":    { "lift": [0, 0, 1, 0, 0, 0, 1, 0], "dx": [0, 1, 2, 1, 0, -1, -2, -1], "lean": [0, 0, 1, 1, 0, 0, -1, -1], "squash": [0, 0, 0, 0, 0, 0, 0, 0], "wave": "none", "amp": 0 },
+    "waddle":  { "lift": [0, 1, 0, 0, 0, 1, 0, 0], "dx": [-1, -1, 0, 1, 1, 1, 0, -1], "lean": [-2, -1, 0, 1, 2, 1, 0, -1], "squash": [0, 0, 0, 0, 0, 0, 0, 0], "wave": "none", "amp": 0 },
+    "slither": { "lift": [0, 0, 0, 0, 0, 0, 0, 0], "dx": [0, 0, 1, 1, 0, 0, -1, -1], "lean": [0, 0, 0, 0, 0, 0, 0, 0], "squash": [0, 0, 0, 0, 0, 0, 0, 0], "wave": "step", "amp": 2 },
+    "float":   { "lift": [0, 1, 2, 3, 3, 2, 1, 0], "dx": [0, 0, 1, 1, 0, 0, -1, -1], "lean": [0, 0, 0, 0, 0, 0, 0, 0], "squash": [0, 0, 0, 0, 0, 0, 0, 0], "wave": "half", "amp": 1 },
+    "pulse":   { "lift": [0, 0, 0, 0, 0, 0, 0, 0], "dx": [0, 0, 1, 0, 0, -1, 0, 0], "lean": [0, 0, 0, 0, 0, 0, 0, 0], "squash": [0, -1, -1, 0, 1, 1, 0, 0], "wave": "none", "amp": 0 }
+  },
+  "breathe": { "squash": [0, 0, 0, 1, 1, 0, 0, 0] },
+  "jump": { "lift": [0, 3, 3, 3, 2, 1, 0, 0], "squash": [1, -2, -1, -1, 0, 2, 1, 0] }
+}

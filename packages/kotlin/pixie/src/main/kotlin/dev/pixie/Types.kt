@@ -5,10 +5,10 @@ public const val SIZE: Int = 32
 internal const val AXIS: Int = 15
 /** Last row of the body. Feet use the rows below it. */
 internal const val GROUND: Int = 25
-/** First row parts may use. Rows above it hold the outline and leave room for the idle bob. */
+/** First row parts may use. Rows above it hold the outline and leave room for lifting. */
 internal const val TOP: Int = 4
-/** Rows the idle bob lifts the mascot. */
-internal const val BOB: Int = 2
+/** Most rows a motion may lift the mascot. Rows 0 until TOP are always empty, so nothing is lost. */
+internal const val MAX_LIFT: Int = 3
 public const val VERSION: Int = 1
 
 /** Palette indices used in grids. */
@@ -40,7 +40,9 @@ public enum class Mood(public val key: String) {
 
 public enum class Template(public val key: String) {
     Blob("blob"), Egg("egg"), Pear("pear"), Capsule("capsule"), Dome("dome"), Cloud("cloud"), Twin("twin"), Box("box"),
-    Star("star"), Gem("gem"), Wedge("wedge"), Hex("hex"), Kite("kite"),
+    Mushroom("mushroom"), Bell("bell"), Drop("drop"), Jelly("jelly"),
+    Star("star"), Gem("gem"), Wedge("wedge"), Hex("hex"), Kite("kite"), Shield("shield"), Hourglass("hourglass"),
+    Serpent("serpent"), Cobra("cobra"), Caterpillar("caterpillar"),
 }
 
 /** A decoration on the body. */
@@ -50,7 +52,14 @@ public enum class Mark(public val key: String) {
 public enum class EyeStyle(public val key: String) { Dot("dot"), Big("big") }
 public enum class Preset(public val key: String) { Gameboy("gameboy"), Mono("mono"), Amber("amber") }
 
-public data class Traits(public val roundness: Int, public val heft: Int, public val energy: Int, public val chaos: Int)
+public data class Traits(
+    public val roundness: Int,
+    public val heft: Int,
+    public val energy: Int,
+    public val chaos: Int,
+    /** Share (0..100) of hissing, slithering letters (s z x h w y l). High values can make a snake. */
+    public val slink: Int = 0,
+)
 
 public data class Anchors(public val eyeY: Int, public val eyeInner: Int, public val mouthY: Int)
 
@@ -61,8 +70,18 @@ public data class Pose(
     public val mood: Mood = Mood.Neutral,
     public val gaze: Gaze = Gaze(),
     public val blink: Boolean = false,
-    /** Shift the whole mascot up one pixel (idle bob). */
-    public val bob: Boolean = false,
+    /** Rows the whole mascot is lifted (0..3). */
+    public val lift: Int = 0,
+    /** Columns the whole mascot is shifted right (negative = left). */
+    public val dx: Int = 0,
+    /** Tilt around the feet: positive leans right at the top (-3..3). */
+    public val lean: Int = 0,
+    /** Positive presses the body shorter, negative stretches it taller (-3..3). */
+    public val squash: Int = 0,
+    /** Phase (0..7) of a sideways wave that ripples down the body. */
+    public val wave: Int = 0,
+    /** Size of that wave in columns (0..2). 0 means none. */
+    public val amp: Int = 0,
 )
 
 public class Sprite internal constructor(
@@ -88,21 +107,7 @@ public class Sprite internal constructor(
     /** A short description for accessibility. */
     public val summary: String
         get() {
-            val shape = when (template) {
-                Template.Blob -> "round"
-                Template.Egg -> "egg-shaped"
-                Template.Pear -> "pear-shaped"
-                Template.Capsule -> "capsule-shaped"
-                Template.Dome -> "dome-shaped"
-                Template.Cloud -> "cloudy"
-                Template.Twin -> "two-part"
-                Template.Box -> "boxy"
-                Template.Star -> "star-shaped"
-                Template.Gem -> "crystal-shaped"
-                Template.Wedge -> "wedge-shaped"
-                Template.Hex -> "hexagonal"
-                Template.Kite -> "kite-shaped"
-            }
+            val shape = SHAPE_WORDS.getValue(template)
             val e = traits.energy
             val mood = if (e < 35) "calm" else if (e < 65) "lively" else "hyper"
             return "A $shape, $mood $colorName pixel mascot"
@@ -117,3 +122,14 @@ internal fun put(g: IntArray, x: Int, y: Int, v: Int) {
 }
 
 internal fun clamp(v: Int, lo: Int = 0, hi: Int = 100): Int = if (v < lo) lo else if (v > hi) hi else v
+
+private val SHAPE_WORDS = mapOf(
+    Template.Blob to "round", Template.Egg to "egg-shaped", Template.Pear to "pear-shaped",
+    Template.Capsule to "capsule-shaped", Template.Dome to "dome-shaped", Template.Cloud to "cloudy",
+    Template.Twin to "two-part", Template.Box to "boxy", Template.Mushroom to "mushroom-shaped",
+    Template.Bell to "bell-shaped", Template.Drop to "drop-shaped", Template.Jelly to "jellyfish-like",
+    Template.Star to "star-shaped", Template.Gem to "crystal-shaped", Template.Wedge to "wedge-shaped",
+    Template.Hex to "hexagonal", Template.Kite to "kite-shaped", Template.Shield to "shield-shaped",
+    Template.Hourglass to "hourglass-shaped", Template.Serpent to "snake-like", Template.Cobra to "cobra-like",
+    Template.Caterpillar to "caterpillar-like",
+)

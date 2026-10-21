@@ -33,7 +33,7 @@ class GoldenTest {
                 }
             }
             check(hex(s.seed), e["seed"].asString, "seed")
-            check(listOf(s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos), e["traits"].asJsonArray.map { it.asInt }, "traits")
+            check(listOf(s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos, s.traits.slink), e["traits"].asJsonArray.map { it.asInt }, "traits")
             check(s.template.key, e["template"].asString, "template")
             check(s.mark.key, e["mark"].asString, "mark")
             check(s.eyeStyle.key, e["eyeStyle"].asString, "eyeStyle")
@@ -43,7 +43,8 @@ class GoldenTest {
             check(gridHash(s.body), e["body"].asString, "body")
             val moods = e["moods"].asJsonObject
             for (m in Mood.entries) check(gridHash(compose(s, Pose(m))), moods[m.key].asString, "mood ${m.key}")
-            check(gridHash(compose(s, Pose(Mood.Thinking, Gaze(1, -1), blink = true, bob = true))), e["pose"].asString, "pose")
+            check(gridHash(compose(s, Pose(Mood.Thinking, Gaze(1, -1), blink = true, lift = 2, dx = 1, lean = -2, squash = 1, wave = 3, amp = 1))), e["pose"].asString, "pose")
+            check(gridHash(compose(s, Pose(lean = 3, squash = -2))), e["squash"].asString, "squash")
             check(hex(fnv1a(utf8(toSVG(s.grid, s.colors)))), e["svg"].asString, "svg")
         }
         assertEquals(0, failures, messages.joinToString("\n"))
@@ -56,7 +57,7 @@ class GoldenTest {
         val stepMs = behavior["stepMs"].asInt
         val script = behavior.getAsJsonArray("script").map { it.asJsonObject }
         val cases = behavior.getAsJsonArray("cases").map { it.asJsonObject }
-        assertEquals(6, cases.size)
+        assertEquals(10, cases.size)
 
         for (c in cases) {
             val text = c["text"].asString
@@ -66,7 +67,7 @@ class GoldenTest {
                 "never" -> AttentionMode.Never
                 else -> AttentionMode.Sometimes
             }
-            val b = Behavior(sprite.seed, sprite.traits, mode, c["reducedMotion"].asBoolean, c["sleepAfterMs"].asInt)
+            val b = Behavior(sprite.seed, sprite.traits, sprite.template, mode, c["reducedMotion"].asBoolean, c["sleepAfterMs"].asInt)
             val trace = StringBuilder()
             var asleepSteps = 0
             var blinks = 0
@@ -89,7 +90,7 @@ class GoldenTest {
                 val p = b.tick(stepMs)
                 if (b.attention == Attention.Asleep) asleepSteps++
                 if (p.blink) blinks++
-                trace.append("${p.mood.key},${p.gaze.x},${p.gaze.y},${if (p.blink) 1 else 0},${if (p.bob) 1 else 0},${b.attention.key};")
+                trace.append("${p.mood.key},${p.gaze.x},${p.gaze.y},${if (p.blink) 1 else 0},${p.lift},${p.dx},${p.lean},${p.squash},${p.wave},${p.amp},${b.attention.key};")
             }
             assertEquals(c["hash"].asString, hex(fnv1a(utf8(trace.toString()))), "behavior trace for $text")
             assertEquals(c["asleepSteps"].asInt, asleepSteps, "asleep steps for $text")

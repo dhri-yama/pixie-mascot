@@ -20,6 +20,7 @@ rareD     = rare * 100 / n
 clusterD  = cc * 100 / n
 energy    = clamp(25 + rareD * 2 + clusterD / 2 + (50 - roundRaw) / 2 + j2)
 chaos     = clamp(distinct * 100 / (n + 2) + rareD / 2 + (energy - 50) / 4 + j3)
+slink     = (count of letters in "szxhwyl") * 100 / n          (0 when n == 0)
 ```
 
 R, S, H, L, rare are sums over the table. `distinct` is the number of different letters.

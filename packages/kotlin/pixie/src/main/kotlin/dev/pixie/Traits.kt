@@ -3,6 +3,7 @@ package dev.pixie
 // Spec: spec/traits.md. Text sound -> four integer traits (0..100). Integer math only.
 
 private val VOWELS = intArrayOf(97, 101, 105, 111, 117)
+private val SLINKY = intArrayOf(115, 122, 120, 104, 119, 121, 108) // s z x h w y l
 
 internal fun computeTraits(norm: String, rng: Rng): Traits {
     val d = listOf(rng.next(), rng.next(), rng.next(), rng.next()).map { it.toLong() }
@@ -10,7 +11,7 @@ internal fun computeTraits(norm: String, rng: Rng): Traits {
     val big = d.map { (it % 61).toInt() - 30 }
 
     var round = 0; var sharp = 0; var heavy = 0; var light = 0; var rare = 0
-    var n = 0; var cc = 0; var mask = 0
+    var n = 0; var cc = 0; var mask = 0; var slinky = 0
     var prevConsonant = false
     var i = 0
     while (i < norm.length) {
@@ -23,6 +24,7 @@ internal fun computeTraits(norm: String, rng: Rng): Traits {
         val row = SpecData.letters[code - 97]
         round += row[0]; sharp += row[1]; heavy += row[2]; light += row[3]; rare += row[4]
         n++
+        if (code in SLINKY) slinky++
         mask = mask or (1 shl (code - 97))
         val consonant = code !in VOWELS
         if (consonant && prevConsonant) cc++
@@ -30,7 +32,7 @@ internal fun computeTraits(norm: String, rng: Rng): Traits {
     }
 
     if (n == 0) {
-        return Traits(clamp(50 + big[0]), clamp(50 + big[1]), clamp(50 + big[2]), clamp(50 + big[3]))
+        return Traits(clamp(50 + big[0]), clamp(50 + big[1]), clamp(50 + big[2]), clamp(50 + big[3]), 0)
     }
 
     val distinct = Integer.bitCount(mask)
@@ -52,5 +54,5 @@ internal fun computeTraits(norm: String, rng: Rng): Traits {
     val variety = distinct * 100 / (n + 2)
     val chaos = clamp(variety + rareD / 2 + (energy - 50) / 4 + jc)
 
-    return Traits(roundness, heft, energy, chaos)
+    return Traits(roundness, heft, energy, chaos, slinky * 100 / n)
 }

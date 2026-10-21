@@ -28,7 +28,7 @@ import Testing
         #expect(a.grid == b.grid)
         #expect(a.grid.count == pixieSize * pixieSize)
         #expect(a.grid.allSatisfy { $0 <= 7 })
-        #expect(Array(a.body[0..<(pixieSize * pixieBob)]) == [UInt8](repeating: 0, count: pixieSize * pixieBob))
+        #expect(Array(a.body[0..<(pixieSize * (pixieTop - 1))]) == [UInt8](repeating: 0, count: pixieSize * (pixieTop - 1)))
         #expect(a.traits.roundness > 80)
         #expect(try generate("jsakkkwaakiyy").traits.roundness < 40)
         #expect(throws: GenerateError.self) { try generate("x", version: 99) }
@@ -45,7 +45,7 @@ import Testing
             }
             let sprite = try generate(s)
             #expect(sprite.grid.count == pixieSize * pixieSize)
-            for mood in Mood.allCases { #expect(compose(sprite, Pose(mood: mood, blink: true, bob: true)).count == pixieSize * pixieSize) }
+            for mood in Mood.allCases { #expect(compose(sprite, Pose(mood: mood, blink: true, lift: 2, dx: 1, lean: 1, squash: -1, wave: 2, amp: 2)).count == pixieSize * pixieSize) }
         }
     }
 }

@@ -19,6 +19,13 @@ const faces = spec("faces/faces.json") as {
   props: Record<string, { x: number; y: number; rows: string[] } | null>;
 };
 
+const motion = spec("motion.json") as {
+  styles: Record<string, { lift: number[]; dx: number[]; lean: number[]; squash: number[]; wave: string; amp: number }>;
+  breathe: { squash: number[] };
+  jump: { lift: number[]; squash: number[] };
+};
+const MOTION_ORDER = ["bounce", "sway", "waddle", "slither", "float", "pulse"];
+
 const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
 const presetNames = Object.keys(pal.presets).filter((k) => Array.isArray(pal.presets[k]));
 const q = (s: string): string => JSON.stringify(s);
@@ -53,6 +60,15 @@ struct PropDef {
     let x: Int
     let y: Int
     let rows: [String]
+}
+
+struct MotionStyle {
+    let lift: [Int]
+    let dx: [Int]
+    let lean: [Int]
+    let squash: [Int]
+    let wave: String
+    let amp: Int
 }
 
 enum SpecData {
@@ -90,6 +106,14 @@ ${moodMap(faces.mouths).replace(/^/gm, "    ")}
     static let props: [String: PropDef] = [
 ${Object.entries(faces.props).filter(([, v]) => v).map(([k, v]) => `        ${q(k)}: PropDef(x: ${v!.x}, y: ${v!.y}, rows: [${qlist(v!.rows)}])`).join(",\n")}
     ]
+
+    /// Idle motion loops (8 steps each), one per style.
+    static let motionStyles: [String: MotionStyle] = [
+${MOTION_ORDER.map((n) => { const m = motion.styles[n]!; return `        ${q(n)}: MotionStyle(lift: [${list(m.lift)}], dx: [${list(m.dx)}], lean: [${list(m.lean)}], squash: [${list(m.squash)}], wave: ${q(m.wave)}, amp: ${m.amp})`; }).join(",\n")}
+    ]
+    static let breatheSquash: [Int] = [${list(motion.breathe.squash)}]
+    static let jumpLift: [Int] = [${list(motion.jump.lift)}]
+    static let jumpSquash: [Int] = [${list(motion.jump.squash)}]
 }
 `;
 }
@@ -109,6 +133,10 @@ internal class PaletteEntry(
 )
 
 internal class PropDef(val x: Int, val y: Int, val rows: List<String>)
+
+internal class MotionStyle(
+    val lift: List<Int>, val dx: List<Int>, val lean: List<Int>, val squash: List<Int>, val wave: String, val amp: Int,
+)
 
 internal object SpecData {
     /** For letters a..z: [round, sharp, heavy, light, rare]. */
@@ -145,6 +173,14 @@ ${moodMap(faces.mouths)}
     val props: Map<String, PropDef> = mapOf(
 ${Object.entries(faces.props).filter(([, v]) => v).map(([k, v]) => `        ${q(k)} to PropDef(${v!.x}, ${v!.y}, listOf(${qlist(v!.rows)}))`).join(",\n")}
     )
+
+    /** Idle motion loops (8 steps each), one per style. */
+    val motionStyles: Map<String, MotionStyle> = mapOf(
+${MOTION_ORDER.map((n) => { const m = motion.styles[n]!; return `        ${q(n)} to MotionStyle(listOf(${list(m.lift)}), listOf(${list(m.dx)}), listOf(${list(m.lean)}), listOf(${list(m.squash)}), ${q(m.wave)}, ${m.amp})`; }).join(",\n")}
+    )
+    val breatheSquash: List<Int> = listOf(${list(motion.breathe.squash)})
+    val jumpLift: List<Int> = listOf(${list(motion.jump.lift)})
+    val jumpSquash: List<Int> = listOf(${list(motion.jump.squash)})
 }
 `;
 }

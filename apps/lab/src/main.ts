@@ -1,4 +1,4 @@
-import { MOODS, compose, describe, generate, normalize, toSVG, toSmoothSVG, type Mood, type PresetName } from "@pixie/core";
+import { MOODS, compose, createBehavior, describe, generate, normalize, toSVG, toSmoothSVG, type Behavior, type Mood, type PresetName } from "@pixie/core";
 
 const DEFAULT_WORDS = `
 bubbanbbebb, jsakkkwaakiyy, bubba, mumu, moon, noodle, bubble, loom, woolly, mellow, boom, mum
@@ -23,7 +23,7 @@ const statsEl = $("stats");
 for (const m of MOODS) moodEl.append(new Option(m, m));
 wordsEl.value = new URLSearchParams(location.hash.slice(1)).get("w") ?? DEFAULT_WORDS;
 
-let frame = 0;
+const behaviors = new Map<string, Behavior>();
 const bar = (label: string, v: number): string =>
   `<span>${label}</span><i style="width:${v}%"></i>`;
 
@@ -44,7 +44,20 @@ function render(): void {
   const cards = jobs.map(([w, mood]) => {
     const s = generate(w, { palette: preset });
     const animated = animateEl.checked;
-    const grid = compose(s, { mood, bob: animated && frame % 4 >= 2, blink: animated && frame % 12 === 11 });
+    if (!animated) behaviors.clear();
+    // Animated cards use the real behavior engine: each shape has its own idle motion, blinks and jumps.
+    let pose: Parameters<typeof compose>[1] = { mood };
+    if (animated) {
+      const key = `${w}|${preset ?? ""}`;
+      let b = behaviors.get(key);
+      if (!b) {
+        b = createBehavior({ seed: s.seed, traits: s.traits, template: s.template, sleepAfterMs: 0 });
+        behaviors.set(key, b);
+      }
+      const p = b.tick(0);
+      pose = { ...p, mood: words.length === 1 ? mood : p.mood };
+    }
+    const grid = compose(s, pose);
     const key = s.grid.join("");
     seen.set(key, (seen.get(key) ?? 0) + 1);
     const t = s.traits;
@@ -64,8 +77,8 @@ for (const el of [wordsEl, moodEl, paletteEl, scaleEl, animateEl, styleEl, smoot
 wordsEl.addEventListener("input", () => history.replaceState(null, "", `#w=${encodeURIComponent(wordsEl.value)}`));
 setInterval(() => {
   if (animateEl.checked) {
-    frame++;
+    for (const b of behaviors.values()) b.tick(100);
     render();
   }
-}, 400);
+}, 100);
 render();

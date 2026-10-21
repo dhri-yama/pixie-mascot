@@ -5,6 +5,8 @@ import Foundation
 
 public enum Attention: String, Sendable { case follow, wander, focus, asleep }
 public enum AttentionMode: Sendable { case always, sometimes, never }
+/// How a mascot idles. Chosen from its body shape.
+public enum Motion: String, Sendable { case bounce, sway, waddle, slither, float, pulse }
 
 /// A direction from the mascot to something. Length about 1 means "far away".
 public struct Vec: Equatable, Sendable {
@@ -19,6 +21,17 @@ public func snapGaze(_ v: Vec, deadzone: Double = 0.3) -> Gaze {
     return Gaze(x: f(v.x), y: f(v.y))
 }
 
+/// Which idle motion a body shape gets. Calm round shapes sway instead of bouncing.
+public func motionFor(_ template: Template, energy: Int) -> Motion {
+    switch template {
+    case .serpent, .cobra, .caterpillar: return .slither
+    case .cloud, .jelly: return .float
+    case .capsule, .twin, .box, .shield, .hourglass: return .waddle
+    case .star, .gem, .hex, .kite, .wedge: return .pulse
+    default: return energy >= 45 ? .bounce : .sway
+    }
+}
+
 private let wanderGazes: [Gaze] = [
     Gaze(x: -1, y: 0), Gaze(x: 1, y: 0), Gaze(x: 0, y: -1), Gaze(x: 0, y: 1),
     Gaze(x: -1, y: -1), Gaze(x: 1, y: -1), Gaze(x: -1, y: 1), Gaze(x: 1, y: 1), Gaze(x: 0, y: 0),
@@ -30,9 +43,11 @@ public final class Behavior {
     private let reduced: Bool
     private let sleepAfter: Int
     private var mode: AttentionMode
+    public let motion: Motion
+    private let style: MotionStyle
 
     private let blinkMin: Int
-    private let bobHalf: Int
+    private let stepMs: Int
     private let gazeDelay: Int
     private let span: Int
     private let phase: Int
@@ -41,7 +56,7 @@ public final class Behavior {
     private var lastActivity = 0
     private var asleep = false
     private var appMood: Mood?
-    private var reaction: (mood: Mood, until: Int)?
+    private var reaction: (mood: Mood, until: Int, start: Int)?
     private var target: Vec?
     private var focusTarget: Vec?
     public private(set) var attention: Attention = .follow
@@ -54,21 +69,26 @@ public final class Behavior {
     private var blinkUntil = -1
     public private(set) var mood: Mood = .neutral
 
-    /// sleepAfterMs 0 never sleeps. Use the sprite's seed and traits so each mascot has its own rhythm.
-    public init(seed: UInt32, traits: Traits, attention: AttentionMode = .sometimes, reducedMotion: Bool = false, sleepAfterMs: Int = 30000) {
+    /// sleepAfterMs 0 never sleeps. Use the sprite's seed, traits and shape so each mascot has its own rhythm and motion.
+    public init(
+        seed: UInt32, traits: Traits, template: Template = .blob, attention: AttentionMode = .sometimes,
+        reducedMotion: Bool = false, sleepAfterMs: Int = 30000
+    ) {
         self.traits = traits
         rng = Rng(seed: seed ^ 0x9e3779b9)
         reduced = reducedMotion
         sleepAfter = sleepAfterMs
         mode = attention
-        blinkMin = 6000 - traits.energy * 30
-        bobHalf = clamp(700 - traits.energy * 4, 250, 700)
+        motion = motionFor(template, energy: traits.energy)
+        style = SpecData.motionStyles[motion.rawValue]!
+        blinkMin = 4000 - traits.energy * 20
+        stepMs = clamp(220 - traits.energy * 13 / 10, 100, 220)
         gazeDelay = 80 + (100 - traits.energy) * 2
         span = 3000 + (100 - traits.chaos) * 40
         // Draw order matters: phase, attention span, first blink.
-        phase = rng.int(bobHalf * 2)
+        phase = rng.int(stepMs * 8)
         attentionUntil = 0 + span + rng.int(3000)
-        nextBlink = blinkMin + rng.int(2500)
+        nextBlink = blinkMin + rng.int(1800)
     }
 
     private func touch() {
@@ -82,7 +102,7 @@ public final class Behavior {
     }
 
     public func react(_ m: Mood, ms: Int = 900) {
-        reaction = (m, now + ms)
+        reaction = (m, now + ms, now)
         touch()
     }
 
@@ -101,7 +121,7 @@ public final class Behavior {
     }
 
     public func poke() {
-        reaction = (.surprised, now + 700)
+        reaction = (.surprised, now + 700, now)
         touch()
     }
 
@@ -154,18 +174,42 @@ public final class Behavior {
 
         mood = appMood ?? reaction?.mood ?? (asleep ? .sleepy : .neutral)
 
+        // Blinks come every two to four seconds, and one in four is a quick double blink.
         var blink = false
         if !reduced && mood != .sleepy {
             if now >= nextBlink {
                 blinkUntil = now + 140
-                nextBlink = now + blinkMin + rng.int(2500)
+                let double = rng.int(100)
+                let gap = rng.int(1800)
+                nextBlink = double < 25 ? now + 320 : now + blinkMin + gap
             }
             blink = now < blinkUntil
         }
 
-        let half = asleep ? bobHalf * 3 : bobHalf
-        let bob = !reduced && ((now + phase) / half) % 2 == 1
+        // Motion. Off for reduced motion; otherwise the shape's idle loop, unless the mood or a reaction says otherwise.
+        var lift = 0, dx = 0, lean = 0, squash = 0, wave = 0, amp = 0
+        if !reduced {
+            let step = (now + phase) / stepMs
+            let i = step & 7
+            if asleep || mood == .sleepy {
+                squash = SpecData.breatheSquash[((now + phase) / (stepMs * 3)) & 7]
+            } else if let r = reaction, r.mood == .happy || r.mood == .surprised, now - r.start < 800 {
+                let k = (now - r.start) / 100
+                lift = SpecData.jumpLift[k]
+                squash = SpecData.jumpSquash[k]
+            } else if mood == .sad {
+                squash = 1 // droop
+            } else {
+                lift = style.lift[i]
+                dx = style.dx[i]
+                lean = style.lean[i]
+                squash = style.squash[i]
+                amp = style.amp
+                wave = style.wave == "step" ? step & 7 : style.wave == "half" ? (step / 2) & 7 : 0
+                if mood == .thinking { lean = clamp(lean + 1, -3, 3) }
+            }
+        }
 
-        return Pose(mood: mood, gaze: gaze, blink: blink, bob: bob)
+        return Pose(mood: mood, gaze: gaze, blink: blink, lift: lift, dx: dx, lean: lean, squash: squash, wave: wave, amp: amp)
     }
 }

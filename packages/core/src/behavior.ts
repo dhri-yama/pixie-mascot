@@ -1,13 +1,16 @@
 // Spec: spec/behavior.md. Pure, seeded state machine: no DOM, no clock, no Math.random().
 // The host calls tick(dtMs) and draws the returned Pose with compose(). Same seed + same calls = same poses.
 
+import motionData from "../../../spec/motion.json";
 import { createRng, type Rng } from "./rng";
-import { clamp } from "./traits";
+import { clamp, idiv } from "./traits";
 import type { Traits } from "./traits";
-import type { Gaze, Mood, Pose } from "./types";
+import type { Gaze, Mood, Pose, Template } from "./types";
 
 export type Attention = "follow" | "wander" | "focus" | "asleep";
 export type AttentionMode = "always" | "sometimes" | "never";
+/** How a mascot idles. Chosen from its body shape. */
+export type Motion = "bounce" | "sway" | "waddle" | "slither" | "float" | "pulse";
 
 /** A direction from the mascot to something. Length ~1 means "far away". */
 export interface Vec {
@@ -19,9 +22,11 @@ export interface BehaviorOptions {
   /** Use the sprite's seed so each mascot has its own rhythm. */
   seed: number;
   traits: Traits;
+  /** The sprite's body shape. It decides how the mascot moves. Default "blob". */
+  template?: Template;
   /** always = never looks away from the cursor, never = ignores it, sometimes = mixes both. */
   attention?: AttentionMode;
-  /** No bobbing, no wandering, no blinking. Gaze still follows. */
+  /** No moving, no blinking, no wandering. Gaze still follows. */
   reducedMotion?: boolean;
   /** Idle time before falling asleep. 0 disables sleeping. Default 30000. */
   sleepAfterMs?: number;
@@ -45,6 +50,7 @@ export interface Behavior {
   setAttention(mode: AttentionMode): void;
   readonly attention: Attention;
   readonly mood: Mood;
+  readonly motion: Motion;
 }
 
 /** Turn a direction into one of 8 gaze directions (or center). Deadzone keeps small offsets still. */
@@ -52,6 +58,45 @@ export function snapGaze(v: Vec, deadzone = 0.3): Gaze {
   const f = (n: number): -1 | 0 | 1 => (n > deadzone ? 1 : n < -deadzone ? -1 : 0);
   return { x: f(v.x), y: f(v.y) };
 }
+
+/** Which idle motion a body shape gets. Calm round shapes sway instead of bouncing. */
+export function motionFor(template: Template, energy: number): Motion {
+  switch (template) {
+    case "serpent":
+    case "cobra":
+    case "caterpillar":
+      return "slither";
+    case "cloud":
+    case "jelly":
+      return "float";
+    case "capsule":
+    case "twin":
+    case "box":
+    case "shield":
+    case "hourglass":
+      return "waddle";
+    case "star":
+    case "gem":
+    case "hex":
+    case "kite":
+    case "wedge":
+      return "pulse";
+    default:
+      return energy >= 45 ? "bounce" : "sway";
+  }
+}
+
+interface Style {
+  lift: number[];
+  dx: number[];
+  lean: number[];
+  squash: number[];
+  wave: string;
+  amp: number;
+}
+const STYLES = motionData.styles as unknown as Record<Motion, Style>;
+const BREATHE = motionData.breathe.squash;
+const JUMP = motionData.jump;
 
 const WANDER_GAZES: Gaze[] = [
   { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 },
@@ -63,20 +108,22 @@ export function createBehavior(options: BehaviorOptions): Behavior {
   const rng: Rng = createRng((options.seed ^ 0x9e3779b9) | 0);
   const reduced = options.reducedMotion ?? false;
   const sleepAfter = options.sleepAfterMs ?? 30000;
+  const motion = motionFor(options.template ?? "blob", traits.energy);
+  const style = STYLES[motion];
   let mode: AttentionMode = options.attention ?? "sometimes";
 
   // Personality from traits (integers, milliseconds).
-  const blinkMin = 6000 - traits.energy * 30; // energetic: blinks more often
-  const bobHalf = clamp(700 - traits.energy * 4, 250, 700); // energetic: bobs faster
+  const blinkMin = 4000 - traits.energy * 20; // energetic: blinks more often
+  const stepMs = clamp(220 - idiv(traits.energy * 13, 10), 100, 220); // energetic: moves faster
   const gazeDelay = 80 + (100 - traits.energy) * 2; // calm: slower to react
   const span = 3000 + (100 - traits.chaos) * 40; // orderly: stays on the cursor longer
-  const phase = rng.int(bobHalf * 2);
+  const phase = rng.int(stepMs * 8);
 
   let now = 0;
   let lastActivity = 0;
   let asleep = false;
   let appMood: Mood | null = null;
-  let reaction: { mood: Mood; until: number } | null = null;
+  let reaction: { mood: Mood; until: number; start: number } | null = null;
   let target: Vec | null = null;
   let focusTarget: Vec | null = null;
   let attention: Attention = "follow";
@@ -85,7 +132,7 @@ export function createBehavior(options: BehaviorOptions): Behavior {
   let wanderAt = 0;
   let gaze: Gaze = { x: 0, y: 0 };
   let gazeAt = 0;
-  let nextBlink = blinkMin + rng.int(2500);
+  let nextBlink = blinkMin + rng.int(1800);
   let blinkUntil = -1;
   let mood: Mood = "neutral";
 
@@ -135,7 +182,7 @@ export function createBehavior(options: BehaviorOptions): Behavior {
       if (m) touch();
     },
     react(m, ms = 900) {
-      reaction = { mood: m, until: now + ms };
+      reaction = { mood: m, until: now + ms, start: now };
       touch();
     },
     clearReaction() {
@@ -151,7 +198,7 @@ export function createBehavior(options: BehaviorOptions): Behavior {
       if (v) touch();
     },
     poke() {
-      reaction = { mood: "surprised", until: now + 700 };
+      reaction = { mood: "surprised", until: now + 700, start: now };
       touch();
     },
     setAttention(m) {
@@ -162,6 +209,9 @@ export function createBehavior(options: BehaviorOptions): Behavior {
     },
     get mood() {
       return mood;
+    },
+    get motion() {
+      return motion;
     },
 
     tick(dt) {
@@ -187,19 +237,43 @@ export function createBehavior(options: BehaviorOptions): Behavior {
 
       mood = appMood ?? reaction?.mood ?? (asleep ? "sleepy" : "neutral");
 
+      // Blinks come every two to four seconds, and one in four is a quick double blink.
       let blink = false;
       if (!reduced && mood !== "sleepy") {
         if (now >= nextBlink) {
           blinkUntil = now + 140;
-          nextBlink = now + blinkMin + rng.int(2500);
+          const double = rng.int(100);
+          const gap = rng.int(1800);
+          nextBlink = double < 25 ? now + 320 : now + blinkMin + gap;
         }
         blink = now < blinkUntil;
       }
 
-      const half = asleep ? bobHalf * 3 : bobHalf;
-      const bob = !reduced && Math.floor((now + phase) / half) % 2 === 1;
+      // Motion. Off for reduced motion; otherwise the shape's idle loop, unless the mood or a reaction says otherwise.
+      let lift = 0, dx = 0, lean = 0, squash = 0, wave = 0, amp = 0;
+      if (!reduced) {
+        const step = Math.floor((now + phase) / stepMs);
+        const i = step & 7;
+        if (asleep || mood === "sleepy") {
+          squash = BREATHE[Math.floor((now + phase) / (stepMs * 3)) & 7]!;
+        } else if (reaction && (reaction.mood === "happy" || reaction.mood === "surprised") && now - reaction.start < 800) {
+          const k = Math.floor((now - reaction.start) / 100);
+          lift = JUMP.lift[k]!;
+          squash = JUMP.squash[k]!;
+        } else if (mood === "sad") {
+          squash = 1; // droop
+        } else {
+          lift = style.lift[i]!;
+          dx = style.dx[i]!;
+          lean = style.lean[i]!;
+          squash = style.squash[i]!;
+          amp = style.amp;
+          wave = style.wave === "step" ? step & 7 : style.wave === "half" ? Math.floor(step / 2) & 7 : 0;
+          if (mood === "thinking") lean = clamp(lean + 1, -3, 3);
+        }
+      }
 
-      return { mood, gaze, blink, bob };
+      return { mood, gaze, blink, lift, dx, lean, squash, wave, amp };
     },
   };
 }

@@ -7,8 +7,8 @@ let pixieAxis = 15
 let pixieGround = 25
 /// First row parts may use. Rows above it hold the outline and leave room for the idle bob.
 let pixieTop = 4
-/// Rows the idle bob lifts the mascot.
-let pixieBob = 2
+/// Most rows a motion may lift the mascot. Rows 0..<pixieTop are always empty, so nothing is lost.
+let pixieMaxLift = 3
 public let pixieVersion = 1
 
 /// Palette indices used in grids.
@@ -34,8 +34,9 @@ public enum Mood: String, CaseIterable, Sendable {
 }
 
 public enum Template: String, Sendable {
-    case blob, egg, pear, capsule, dome, cloud, twin, box
-    case star, gem, wedge, hex, kite
+    case blob, egg, pear, capsule, dome, cloud, twin, box, mushroom, bell, drop, jelly
+    case star, gem, wedge, hex, kite, shield, hourglass
+    case serpent, cobra, caterpillar
 }
 
 /// A decoration on the body.
@@ -48,8 +49,10 @@ public struct Traits: Equatable, Sendable {
     public var heft: Int
     public var energy: Int
     public var chaos: Int
-    public init(roundness: Int, heft: Int, energy: Int, chaos: Int) {
-        self.roundness = roundness; self.heft = heft; self.energy = energy; self.chaos = chaos
+    /// Share (0...100) of hissing, slithering letters (s z x h w y l). High values can make a snake.
+    public var slink: Int
+    public init(roundness: Int, heft: Int, energy: Int, chaos: Int, slink: Int = 0) {
+        self.roundness = roundness; self.heft = heft; self.energy = energy; self.chaos = chaos; self.slink = slink
     }
 }
 
@@ -70,10 +73,24 @@ public struct Pose: Equatable, Sendable {
     public var mood: Mood
     public var gaze: Gaze
     public var blink: Bool
-    /// Shift the whole mascot up one pixel (idle bob).
-    public var bob: Bool
-    public init(mood: Mood = .neutral, gaze: Gaze = Gaze(), blink: Bool = false, bob: Bool = false) {
-        self.mood = mood; self.gaze = gaze; self.blink = blink; self.bob = bob
+    /// Rows the whole mascot is lifted (0...3).
+    public var lift: Int
+    /// Columns the whole mascot is shifted right (negative = left).
+    public var dx: Int
+    /// Tilt around the feet: positive leans right at the top (-3...3).
+    public var lean: Int
+    /// Positive presses the body shorter, negative stretches it taller (-3...3).
+    public var squash: Int
+    /// Phase (0...7) of a sideways wave that ripples down the body.
+    public var wave: Int
+    /// Size of that wave in columns (0...2). 0 means none.
+    public var amp: Int
+    public init(
+        mood: Mood = .neutral, gaze: Gaze = Gaze(), blink: Bool = false, lift: Int = 0, dx: Int = 0,
+        lean: Int = 0, squash: Int = 0, wave: Int = 0, amp: Int = 0
+    ) {
+        self.mood = mood; self.gaze = gaze; self.blink = blink; self.lift = lift; self.dx = dx
+        self.lean = lean; self.squash = squash; self.wave = wave; self.amp = amp
     }
 }
 
@@ -97,22 +114,14 @@ public struct Sprite: Sendable {
 
     /// A short description for accessibility.
     public var summary: String {
-        let shape: String
-        switch template {
-        case .blob: shape = "round"
-        case .egg: shape = "egg-shaped"
-        case .pear: shape = "pear-shaped"
-        case .capsule: shape = "capsule-shaped"
-        case .dome: shape = "dome-shaped"
-        case .cloud: shape = "cloudy"
-        case .twin: shape = "two-part"
-        case .box: shape = "boxy"
-        case .star: shape = "star-shaped"
-        case .gem: shape = "crystal-shaped"
-        case .wedge: shape = "wedge-shaped"
-        case .hex: shape = "hexagonal"
-        case .kite: shape = "kite-shaped"
-        }
+        let words: [Template: String] = [
+            .blob: "round", .egg: "egg-shaped", .pear: "pear-shaped", .capsule: "capsule-shaped", .dome: "dome-shaped",
+            .cloud: "cloudy", .twin: "two-part", .box: "boxy", .mushroom: "mushroom-shaped", .bell: "bell-shaped",
+            .drop: "drop-shaped", .jelly: "jellyfish-like", .star: "star-shaped", .gem: "crystal-shaped",
+            .wedge: "wedge-shaped", .hex: "hexagonal", .kite: "kite-shaped", .shield: "shield-shaped",
+            .hourglass: "hourglass-shaped", .serpent: "snake-like", .cobra: "cobra-like", .caterpillar: "caterpillar-like",
+        ]
+        let shape = words[template] ?? "round"
         let e = traits.energy
         let mood = e < 35 ? "calm" : e < 65 ? "lively" : "hyper"
         return "A \(shape), \(mood) \(colorName) pixel mascot"

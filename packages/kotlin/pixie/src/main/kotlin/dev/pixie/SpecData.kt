@@ -9,6 +9,10 @@ internal class PaletteEntry(
 
 internal class PropDef(val x: Int, val y: Int, val rows: List<String>)
 
+internal class MotionStyle(
+    val lift: List<Int>, val dx: List<Int>, val lean: List<Int>, val squash: List<Int>, val wave: String, val amp: Int,
+)
+
 internal object SpecData {
     /** For letters a..z: [round, sharp, heavy, light, rare]. */
     val letters: List<List<Int>> = listOf(
@@ -143,4 +147,17 @@ internal object SpecData {
         "thinking" to PropDef(25, 0, listOf("....aa", "....aa", "..aa..", "..aa..", "aa....", "aa....")),
         "sleepy" to PropDef(25, 0, listOf("aaaaaa", "....aa", "...aa.", "..aa..", "aa....", "aaaaaa"))
     )
+
+    /** Idle motion loops (8 steps each), one per style. */
+    val motionStyles: Map<String, MotionStyle> = mapOf(
+        "bounce" to MotionStyle(listOf(0, 2, 3, 3, 2, 0, 0, 0), listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(1, -1, -1, 0, 0, 2, 1, 0), "none", 0),
+        "sway" to MotionStyle(listOf(0, 0, 1, 0, 0, 0, 1, 0), listOf(0, 1, 2, 1, 0, -1, -2, -1), listOf(0, 0, 1, 1, 0, 0, -1, -1), listOf(0, 0, 0, 0, 0, 0, 0, 0), "none", 0),
+        "waddle" to MotionStyle(listOf(0, 1, 0, 0, 0, 1, 0, 0), listOf(-1, -1, 0, 1, 1, 1, 0, -1), listOf(-2, -1, 0, 1, 2, 1, 0, -1), listOf(0, 0, 0, 0, 0, 0, 0, 0), "none", 0),
+        "slither" to MotionStyle(listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 1, 1, 0, 0, -1, -1), listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 0, 0, 0, 0, 0, 0), "step", 2),
+        "float" to MotionStyle(listOf(0, 1, 2, 3, 3, 2, 1, 0), listOf(0, 0, 1, 1, 0, 0, -1, -1), listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 0, 0, 0, 0, 0, 0), "half", 1),
+        "pulse" to MotionStyle(listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 1, 0, 0, -1, 0, 0), listOf(0, 0, 0, 0, 0, 0, 0, 0), listOf(0, -1, -1, 0, 1, 1, 0, 0), "none", 0)
+    )
+    val breatheSquash: List<Int> = listOf(0, 0, 0, 1, 1, 0, 0, 0)
+    val jumpLift: List<Int> = listOf(0, 3, 3, 3, 2, 1, 0, 0)
+    val jumpSquash: List<Int> = listOf(1, -2, -1, -1, 0, 2, 1, 0)
 }

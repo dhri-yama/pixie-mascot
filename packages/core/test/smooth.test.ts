@@ -21,7 +21,7 @@ describe("toSmoothSVG", () => {
     for (const w of WORDS) {
       const s = generate(w);
       for (const mood of MOODS) {
-        const svg = toSmoothSVG(compose(s, { mood, blink: mood === "happy", bob: mood === "sad" }), s.colors);
+        const svg = toSmoothSVG(compose(s, { mood, blink: mood === "happy", lift: mood === "sad" ? 2 : 0, squash: mood === "happy" ? 1 : 0 }), s.colors);
         for (const m of svg.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)) {
           const x = Number(m[1]), y = Number(m[2]);
           expect(x).toBeGreaterThanOrEqual(0);

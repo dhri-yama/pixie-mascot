@@ -131,6 +131,15 @@ inspiration for *silhouette archetypes* (not copying characters), the generator 
 proportions, a bigger parts library (rabbit/cat/bear ears, wings, flippers, flame, sprout), one-sided tails and 6
 markings. TypeScript, Swift and Kotlin were all updated and pass the regenerated golden file.
 
+## More types, motion and blinking (2026-10-22, after review)
+
+The owner asked for more creature types (snakes, non-circle shapes), richer movement than a bounce, and more blinking.
+22 body shapes now (mushroom, bell, drop, jellyfish, shield, hourglass, coiled snake, cobra, caterpillar added), with
+text full of hissing letters (s z x h w y l) often making snakes. The pose gained lift, dx, lean, squash, wave and amp;
+a motion style is chosen per shape (bounce, sway, waddle, slither, float, pulse) from `spec/motion.json`, reactions jump,
+sad droops, sleep breathes. Blinks are roughly every 4 s (was 6) with occasional doubles. A bug where parts overhanging a
+narrow body grew pillars downward was fixed by sliding parts inward. All three languages pass the regenerated golden file.
+
 ## Smooth rendering (2026-10-22, after review)
 
 The owner still found 32x32 a bit blocky, so a smooth renderer was added on top of the same grid for a side-by-side

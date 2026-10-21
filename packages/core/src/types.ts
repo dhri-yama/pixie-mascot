@@ -7,13 +7,15 @@ export const AXIS = 15;
 export const GROUND = 25;
 /** First row parts may use. Rows above it hold the outline and leave room for the idle bob. */
 export const TOP = 4;
-/** Rows the idle bob lifts the mascot. */
-export const BOB = 2;
+/** Most rows a motion may lift the mascot. Rows 0..TOP-1 are always empty, so nothing is lost. */
+export const MAX_LIFT = 3;
 export const VERSION = 1;
 export type Grid = Uint8Array;
 export type Template =
   | "blob" | "egg" | "pear" | "capsule" | "dome" | "cloud" | "twin" | "box"
-  | "star" | "gem" | "wedge" | "hex" | "kite";
+  | "mushroom" | "bell" | "drop" | "jelly"
+  | "star" | "gem" | "wedge" | "hex" | "kite" | "shield" | "hourglass"
+  | "serpent" | "cobra" | "caterpillar";
 export type Mark = "none" | "belly" | "spots" | "stripes" | "cheeks" | "gem";
 export type EyeStyle = "dot" | "big";
 export type PresetName = "gameboy" | "mono" | "amber";
@@ -64,6 +66,16 @@ export interface Pose {
   mood?: Mood;
   gaze?: Gaze;
   blink?: boolean;
-  /** Shift the whole mascot up one pixel (idle bob). */
-  bob?: boolean;
+  /** Rows the whole mascot is lifted (0..3). */
+  lift?: number;
+  /** Columns the whole mascot is shifted right (negative = left). */
+  dx?: number;
+  /** Tilt around the feet: positive leans right at the top (-3..3). */
+  lean?: number;
+  /** Positive presses the body shorter, negative stretches it taller (-3..3). */
+  squash?: number;
+  /** Phase (0..7) of a sideways wave that ripples down the body. */
+  wave?: number;
+  /** Size of that wave in columns (0..2). 0 means none. */
+  amp?: number;
 }

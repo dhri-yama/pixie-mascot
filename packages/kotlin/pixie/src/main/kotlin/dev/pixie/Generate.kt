@@ -5,21 +5,30 @@ package dev.pixie
 //
 // Geometry (32x32 grid): the left half is columns 0..15 and is mirrored onto 16..31. The body sits on the
 // ground (its last row is 25), feet use rows 26..29, row 30 is outline. Rows 0..3 are kept free for parts
-// that stick up, the outline above them, and the idle bob. A tail is drawn after mirroring, on the right only.
+// that stick up, the outline above them, and lifting. A tail is drawn after mirroring, on the right only.
 
 private class PartRolls(val present: Int, val tone: Int, val part: Long, val dx: Long, val row: Long)
 
 private val PART_VALUE = mapOf('#' to Cell.BODY, 'a' to Cell.ACCENT, 'd' to Cell.SHADE, 'l' to Cell.LIGHT)
 
-/** Body shapes. Round-sounding text picks from the soft list, sharp-sounding text from the sharp list. */
-private val SOFT = listOf(Template.Blob, Template.Egg, Template.Pear, Template.Capsule, Template.Dome, Template.Cloud, Template.Twin, Template.Box)
-private val SHARP = listOf(Template.Star, Template.Gem, Template.Wedge, Template.Hex, Template.Kite)
+/**
+ * Body shapes. Round-sounding text picks from the soft list, sharp-sounding text from the sharp list, and text
+ * full of hissing, slithering letters (s z x h w y l) often picks from the sinuous list: snakes and worms.
+ */
+private val SOFT = listOf(
+    Template.Blob, Template.Egg, Template.Pear, Template.Capsule, Template.Dome, Template.Cloud, Template.Twin, Template.Box,
+    Template.Mushroom, Template.Bell, Template.Drop, Template.Jelly,
+)
+private val SHARP = listOf(Template.Star, Template.Gem, Template.Wedge, Template.Hex, Template.Kite, Template.Shield, Template.Hourglass)
+private val SINUOUS = listOf(Template.Serpent, Template.Cobra, Template.Caterpillar)
 
 /** Where the eyes start, as a percent of the body height. */
 private val EYE_PCT = mapOf(
     Template.Blob to 30, Template.Egg to 30, Template.Pear to 25, Template.Capsule to 25, Template.Dome to 35,
-    Template.Cloud to 35, Template.Twin to 0, Template.Box to 30, Template.Star to 40, Template.Gem to 40,
-    Template.Wedge to 45, Template.Hex to 30, Template.Kite to 40,
+    Template.Cloud to 35, Template.Twin to 0, Template.Box to 30, Template.Mushroom to 25, Template.Bell to 45,
+    Template.Drop to 50, Template.Jelly to 25, Template.Star to 40, Template.Gem to 40, Template.Wedge to 45,
+    Template.Hex to 30, Template.Kite to 40, Template.Shield to 25, Template.Hourglass to 15, Template.Serpent to 0,
+    Template.Cobra to 10, Template.Caterpillar to 8,
 )
 
 private fun topOf(g: IntArray, x: Int): Int {
@@ -63,6 +72,13 @@ private fun ellipseHw(r: Int, hw: Int, h: Int): Int {
 
 /** Half width of row i (from the end) of a round cap of radius ra. */
 private fun capHw(i: Int, ra: Int): Int = (isqrt((2 * i + 1) * (4 * ra - 2 * i - 1)) + 1) / 2
+
+/** Widest of several ellipses stacked down the body. Each is (first row, height, half width). */
+private fun stackHw(r: Int, segs: List<Triple<Int, Int, Int>>): Int {
+    var v = 0
+    for ((start, h, w) in segs) if (r >= start && r < start + h) v = maxOf(v, ellipseHw(r - start, w, h))
+    return v
+}
 
 /** Half width in cells for every body row. Each shape is a different silhouette; widths are clamped to 1..half. */
 private fun rowWidths(t: Template, half: Int, bh: Int, k: Int, halfTop: Int): IntArray {
@@ -109,10 +125,83 @@ private fun rowWidths(t: Template, half: Int, bh: Int, k: Int, halfTop: Int): In
                 val s = maxOf(3, bh * 35 / 100)
                 if (r < s) half * (r + 1) / s else half * (bh - r) / (bh - s)
             }
+            Template.Mushroom -> {
+                val tt = maxOf(4, bh * 55 / 100)
+                if (r < tt) (half * isqrt((2 * r + 1) * (4 * tt - 2 * r - 1)) + tt) / (2 * tt) else maxOf(3, half * 40 / 100)
+            }
+            Template.Jelly -> {
+                val tt = maxOf(4, bh * 55 / 100)
+                if (r < tt) (half * isqrt((2 * r + 1) * (4 * tt - 2 * r - 1)) + tt) / (2 * tt) else half * 85 / 100
+            }
+            Template.Bell -> {
+                val q = 100 * r / (bh - 1)
+                half * (30 + 70 * q * q / 10000) / 100
+            }
+            Template.Drop -> {
+                val s = maxOf(3, bh * 45 / 100)
+                if (r < s) half * (r + 1) * (r + 1) / ((s + 1) * (s + 1)) else ellipseHw(bh - s + (r - s), half, 2 * (bh - s))
+            }
+            Template.Shield -> {
+                val s = bh * 55 / 100
+                if (r < s) half - maxOf(0, 2 - r) else half * (bh - r) / (bh - s)
+            }
+            Template.Hourglass -> half * (35 + 65 * kotlin.math.abs(2 * r + 1 - bh) / bh) / 100
+            Template.Cobra -> {
+                val b0 = bh * 42 / 100
+                val b1 = bh * 66 / 100
+                stackHw(r, listOf(
+                    Triple(0, maxOf(5, bh * 40 / 100), half), // hood
+                    Triple(bh * 30 / 100, maxOf(3, bh * 20 / 100 + 1), maxOf(3, half * 30 / 100)), // neck
+                    Triple(b0, maxOf(4, bh * 30 / 100), half * 80 / 100), // first coil
+                    Triple(b1, bh - b1, half * 95 / 100), // second coil
+                ))
+            }
+            Template.Caterpillar -> {
+                val h = bh * 34 / 100 + 1
+                stackHw(r, listOf(
+                    Triple(0, h, maxOf(6, half * 70 / 100)), // head
+                    Triple(bh * 22 / 100, h, half * 85 / 100),
+                    Triple(bh * 44 / 100, h, half),
+                    Triple(bh * 66 / 100, h, half * 75 / 100),
+                ))
+            }
+            Template.Serpent -> 1 // drawn from circles instead, see serpentCells
         }
         w[r] = clamp(v, 1, half)
     }
     return w
+}
+
+/** One period of a sine wave in sixteenths, 32 steps. Used for the coils of a snake. */
+private val SIN32 = intArrayOf(0, 3, 6, 9, 11, 13, 15, 16, 16, 16, 15, 13, 11, 9, 6, 3, 0, -3, -6, -9, -11, -13, -15, -16, -16, -16, -15, -13, -11, -9, -6, -3)
+
+/** Fill a circle of radius r (in cells) centered on cell row cy, at doubled column c2x. */
+private fun stamp(g: IntArray, c2x: Int, cy: Int, r: Int) {
+    val c2y = 2 * cy + 1
+    for (y in cy - r - 1..cy + r + 1) {
+        for (x in 0 until SIZE) {
+            val dx = 2 * x + 1 - c2x
+            val dy = 2 * y + 1 - c2y
+            if (dx * dx + dy * dy <= 4 * r * r) put(g, x, y, Cell.BODY)
+        }
+    }
+}
+
+/**
+ * A coiled snake: a round head on a short neck, resting on two stacked ring-shaped coils with holes you can see
+ * through. Built from a chain of circles along two ellipses. Not mirrored from a half. Returns the head radius.
+ */
+private fun serpentCells(g: IntArray, y0: Int): Int {
+    val r0 = 5 // head radius
+    stamp(g, SIZE, y0 + r0, r0)
+    stamp(g, SIZE, y0 + r0 + 1, r0 - 1)
+    for (cy in y0 + r0 + 3..y0 + r0 + 5) stamp(g, SIZE, cy, 2) // neck
+    fun coil(cy: Int, rx: Int, ry: Int) {
+        for (j in 0 until 32) stamp(g, SIZE + 2 * (rx * SIN32[(j + 8) and 31] / 16), cy + ry * SIN32[j] / 16, 2)
+    }
+    coil(GROUND - 10, 8, 3) // upper coil
+    coil(GROUND - 4, 12, 4) // lower, wider coil
+    return r0
 }
 
 private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh: Int, half: Int) {
@@ -127,10 +216,10 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
 
     when (part.slot) {
         "top" -> {
-            // Move inward until there is body under the anchor column (narrow tops, stars, kites...).
+            // Slide inward until body lies under every column of the part (narrow tops, stars, snakes...), else skip it.
             var ax = maxOf(xl, AXIS - part.dx[(rolls.dx % part.dx.size).toInt()])
-            while (ax < AXIS && topOf(g, ax) < 0) ax++
-            if (topOf(g, ax) < 0) return
+            while (ax < AXIS && (topOf(g, ax) < 0 || topOf(g, ax - (w - 1)) < 0)) ax++
+            if (topOf(g, ax) < 0 || topOf(g, ax - (w - 1)) < 0) return
             val yb = topOf(g, ax) - 1
             for (i in 0 until h) {
                 val y = yb - (h - 1) + i
@@ -179,9 +268,9 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
         }
         "bottom" -> {
             var ax = maxOf(xl, AXIS - part.dx[(rolls.dx % part.dx.size).toInt()])
-            while (ax < AXIS && bottomOf(g, ax) < 0) ax++
+            while (ax < AXIS && (bottomOf(g, ax) < 0 || bottomOf(g, ax - (w - 1)) < 0)) ax++
             val yb = bottomOf(g, ax)
-            if (yb < 0) return
+            if (yb < 0 || bottomOf(g, ax - (w - 1)) < 0) return
             for (i in 0 until h) {
                 val y = yb + 1 + i
                 if (y > GROUND + 4) continue
@@ -232,6 +321,14 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
     }
 }
 
+/** Snakes are plain coils with at most a tail, cobras are plain, caterpillars get feelers and feet; everything else can have every part. */
+private fun allows(t: Template, slot: String): Boolean {
+    if (t == Template.Serpent) return slot == "tail"
+    if (t == Template.Cobra) return false
+    if (t == Template.Caterpillar) return slot == "top" || slot == "bottom"
+    return true
+}
+
 private fun pickPart(slot: String, wantSoft: Boolean, rolls: PartRolls, chaos: Int): PartDef? {
     val flip = rolls.tone < 20 + chaos / 5
     val soft = if (flip) !wantSoft else wantSoft
@@ -278,6 +375,7 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
 
     // Body shape and proportions.
     val eff = clamp(roundness + (rng.int(15) - 7))
+    val familyRoll = rng.int(100)
     val shapeRoll = rng.int(1000)
     val heightRoll = rng.int(3)
     val stretchRoll = rng.int(5)
@@ -285,28 +383,46 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
     val leanRoll = rng.int(61) - 30
     val chamferRoll = rng.int(3)
     val wedgeRoll = rng.int(3)
-    val list = if (eff >= 50) SOFT else SHARP
+    // Hissing, slithering letters often make a snake or worm; a few other texts get one by chance.
+    val sinuous = (traits.slink >= 30 && familyRoll < 70) || familyRoll < 4
+    val list = if (sinuous) SINUOUS else if (eff >= 50) SOFT else SHARP
     val template = list[shapeRoll % list.size]
     // Heft says wide or tall, but a roll of its own keeps heavy-sounding words from all being flat blobs.
     // Pointy shapes cover less area, so they are drawn a little bigger.
     val lean = clamp(heft + leanRoll)
     val grow = if (template == Template.Star || template == Template.Gem || template == Template.Kite || template == Template.Hex) 2 else if (template == Template.Wedge) 1 else 0
     val half = clamp(7 + lean * 6 / 100 + widthRoll - 1 + grow, 7, 13) // 7..13 columns on the left side
-    val bh = clamp(18 - lean * 7 / 100 - heightRoll + stretchRoll - 2, 10, 18) // 10..18 rows tall
+    // A snake fills the whole height; everything else is 10..18 rows tall.
+    val bh = if (template == Template.Serpent) GROUND - TOP + 1 else clamp(18 - lean * 7 / 100 - heightRoll + stretchRoll - 2, 10, 18)
     val y0 = GROUND - bh + 1
     val xl = AXIS + 1 - half
     val k = 2 + chamferRoll // chamfer size of the box
     val halfTop = minOf(half, 3 + wedgeRoll) // half width at the top of the wedge
 
     val g = IntArray(SIZE * SIZE)
-    val widths = rowWidths(template, half, bh, k, halfTop)
-    for (r in 0 until bh) {
-        for (c in 0 until half) {
-            // The cloud's lower edge is scalloped: every other group of three columns is three rows shorter.
-            if (template == Template.Cloud && r >= bh - (if (c % 6 < 3) 0 else 3)) continue
-            if (half - c <= widths[r]) put(g, xl + c, y0 + r, Cell.BODY)
+    // The head of a serpent is a circle, so its eyes have less room than a body of the same width.
+    var eyeRoom = half
+    var serpentHead = 0
+    if (template == Template.Serpent) {
+        serpentHead = serpentCells(g, y0)
+        eyeRoom = serpentHead
+    } else {
+        val widths = rowWidths(template, half, bh, k, halfTop)
+        val jellyTop = maxOf(4, bh * 55 / 100)
+        for (r in 0 until bh) {
+            for (c in 0 until half) {
+                // The cloud's lower edge is scalloped: every other group of three columns is three rows shorter.
+                if (template == Template.Cloud && r >= bh - (if (c % 6 < 3) 0 else 3)) continue
+                // A jellyfish keeps only thin strands of different lengths under its dome.
+                if (template == Template.Jelly && r >= jellyTop && !(c % 4 == 1 && r < bh - ((c * 5) % 4))) continue
+                if (half - c <= widths[r]) {
+                    put(g, xl + c, y0 + r, Cell.BODY)
+                    put(g, SIZE - 1 - (xl + c), y0 + r, Cell.BODY)
+                }
+            }
         }
     }
+    val bodyOnly = g.copyOf()
 
     // Parts. Every slot always draws the same five numbers.
     fun draw() = PartRolls(rng.int(100), rng.int(100), rng.next().toLong(), rng.next().toLong(), rng.next().toLong())
@@ -323,11 +439,18 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         Triple("top", rTop2, if (energy >= 60) 60 else 0),
     )
     for ((slot, rolls, chance) in plan) {
-        if (rolls.present >= chance) continue
+        if (rolls.present >= chance || !allows(template, slot)) continue
         pickPart(slot, wantSoft, rolls, chaos)?.let { placePart(g, it, rolls, y0, bh, half) }
     }
 
-    // Marks. One decoration per mascot; always draw the same seven numbers.
+    // Mirror the parts (placed on the left half) onto the right half. The body already has both sides.
+    for (y in 0 until SIZE) {
+        for (x in 0..AXIS) {
+            if (g[y * SIZE + x] != bodyOnly[y * SIZE + x]) put(g, SIZE - 1 - x, y, at(g, x, y))
+        }
+    }
+
+    // Marks. One decoration per mascot; always draw the same seven numbers. They only ever paint body pixels.
     val markRoll = rng.int(100)
     val mr = LongArray(6) { rng.next().toLong() }
     val mark = if (markRoll < 25) Mark.None else if (markRoll < 45) Mark.Belly else if (markRoll < 60) Mark.Spots else if (markRoll < 72) Mark.Stripes else if (markRoll < 88) Mark.Cheeks else Mark.Gem
@@ -336,8 +459,8 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         val hh = maxOf(2, bh * 22 / 100)
         val hwb = maxOf(3, half * 55 / 100)
         for (y in rc - hh..rc + hh) {
-            for (x in xl..AXIS) {
-                val dxc = AXIS + 1 - x
+            for (x in 0 until SIZE) {
+                val dxc = if (x <= AXIS) AXIS + 1 - x else x - AXIS
                 val dyy = y - rc
                 if (dxc * dxc * hh * hh + dyy * dyy * hwb * hwb <= hwb * hwb * hh * hh && at(g, x, y) == Cell.BODY) put(g, x, y, Cell.LIGHT)
             }
@@ -346,11 +469,13 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         for (i in 0 until 3) {
             val x = xl + 2 + (mr[2 * i] % maxOf(1, half - 5)).toInt()
             val y = y0 + 3 + (mr[2 * i + 1] % maxOf(1, bh - 8)).toInt()
-            if (at(g, x, y) == Cell.BODY && at(g, x + 1, y) == Cell.BODY && at(g, x, y + 1) == Cell.BODY && at(g, x + 1, y + 1) == Cell.BODY) {
-                put(g, x, y, Cell.SHADE)
-                put(g, x + 1, y, Cell.SHADE)
-                put(g, x, y + 1, Cell.SHADE)
-                put(g, x + 1, y + 1, Cell.SHADE)
+            for (sx in listOf(x, SIZE - 2 - x)) {
+                if (at(g, sx, y) == Cell.BODY && at(g, sx + 1, y) == Cell.BODY && at(g, sx, y + 1) == Cell.BODY && at(g, sx + 1, y + 1) == Cell.BODY) {
+                    put(g, sx, y, Cell.SHADE)
+                    put(g, sx + 1, y, Cell.SHADE)
+                    put(g, sx, y + 1, Cell.SHADE)
+                    put(g, sx + 1, y + 1, Cell.SHADE)
+                }
             }
         }
     } else if (mark == Mark.Stripes) {
@@ -359,16 +484,13 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         for (b in 0 until bands) {
             val yy = y0 + 3 + b * (2 + gap)
             for (dy in 0 until 2) {
-                for (x in xl..AXIS) if (at(g, x, yy + dy) == Cell.BODY) put(g, x, yy + dy, Cell.SHADE)
+                for (x in 0 until SIZE) if (at(g, x, yy + dy) == Cell.BODY) put(g, x, yy + dy, Cell.SHADE)
             }
         }
     }
 
-    // Mirror left half onto the right half.
-    for (y in 0 until SIZE) for (x in 0..AXIS) put(g, SIZE - 1 - x, y, at(g, x, y))
-
     // A tail grows on the right side only, so it is the one thing that is not mirrored.
-    if (rTail.present < 25 + chaos / 4 + energy / 5) {
+    if (rTail.present < 25 + chaos / 4 + energy / 5 && allows(template, "tail")) {
         pickPart("tail", wantSoft, rTail, chaos)?.let { placePart(g, it, rTail, y0, bh, half) }
     }
 
@@ -427,8 +549,10 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
     // Face anchors. Narrow bodies cannot hold the big 6x6 eyes, so they get the small ones.
     val eyeInnerRoll = rng.int(3)
     val eyeStyleRoll = rng.int(40)
-    val eyeStyle = if (clamp(roundness + eyeStyleRoll - 20) >= 50 && half >= 9) EyeStyle.Big else EyeStyle.Dot
-    val eyeBase = if (template == Template.Twin) minOf(bh - 6, 2 * maxOf(5, half * 70 / 100)) * 35 / 100 else bh * EYE_PCT.getValue(template) / 100
+    val eyeStyle = if (clamp(roundness + eyeStyleRoll - 20) >= 50 && eyeRoom >= 9) EyeStyle.Big else EyeStyle.Dot
+    val eyeBase = if (template == Template.Twin) minOf(bh - 6, 2 * maxOf(5, half * 70 / 100)) * 35 / 100
+        else if (template == Template.Serpent) maxOf(0, serpentHead - 3)
+        else bh * EYE_PCT.getValue(template) / 100
     val (fitY, fitInner) = fitEyes(snap2, eyeStyle, y0 + eyeBase, 2 + eyeInnerRoll + (if (half >= 11) 2 else 0))
     val anchors = Anchors(fitY, fitInner, minOf(fitY + 8, y0 + bh - 4))
 

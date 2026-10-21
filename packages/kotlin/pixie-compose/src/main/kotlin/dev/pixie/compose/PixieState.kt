@@ -31,7 +31,7 @@ public class PixieState internal constructor(
     private val sleepAfterMs: Int,
 ) {
     public val sprite: Sprite = generate(text, palette = palette)
-    private var behavior = Behavior(sprite.seed, sprite.traits, attention, reducedMotion, sleepAfterMs)
+    private var behavior = Behavior(sprite.seed, sprite.traits, sprite.template, attention, reducedMotion, sleepAfterMs)
     private var appMood: Mood? = null
 
     /** The pose currently on screen. Reading it in a draw block redraws when it changes. */

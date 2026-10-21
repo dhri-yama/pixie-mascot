@@ -11,11 +11,11 @@ and rng call order must not change. Any such change is a new version with its ow
 
 ## v1 measurements (2026-10-22, `pnpm variety`)
 
-Grid is 32x32, with 13 body shapes, 6 markings and one-sided tails. 100,000 distinct random strings of 4-12 letters:
-100,000 unique sprites (no collisions), 99,999 unique silhouettes-and-faces ignoring color.
-History: the first draft used 16x16 (99.47% unique, 529 collisions) and looked too pixelated; the grid was doubled
-and the art redrawn (99.97%, 35 collisions). Then most mascots still looked alike (a wide flat blob with ears), so
-body archetypes, proportions, tails and markings were added.
+Grid 32x32, 22 body shapes (including a coiled snake, cobra and caterpillar), 6 markings, one-sided tails, a motion
+style per shape. 100,000 distinct random strings of 4-12 letters: 99,954 unique sprites (99.95%, 46 shared a sprite),
+99,601 unique silhouettes-and-faces ignoring color.
+History: 16x16 first draft (99.47%); 32x32 (99.97%); 13 shapes and markings (100.00%); 22 shapes (99.95%: the snake
+and cobra shapes have fewer degrees of freedom).
 
 ## Golden file
 

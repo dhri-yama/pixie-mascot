@@ -48,7 +48,7 @@ export function entry(input: string) {
     input,
     normalized: s.text,
     seed: hex(s.seed),
-    traits: [s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos],
+    traits: [s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos, s.traits.slink],
     template: s.template,
     mark: s.mark,
     eyeStyle: s.eyeStyle,
@@ -57,7 +57,8 @@ export function entry(input: string) {
     grid: gridHash(s.grid),
     body: gridHash(s.body),
     moods,
-    pose: gridHash(compose(s, { mood: "thinking", gaze: { x: 1, y: -1 }, blink: true, bob: true })),
+    pose: gridHash(compose(s, { mood: "thinking", gaze: { x: 1, y: -1 }, blink: true, lift: 2, dx: 1, lean: -2, squash: 1, wave: 3, amp: 1 })),
+    squash: gridHash(compose(s, { squash: -2, lean: 3 })),
     svg: hex(fnv1a(utf8(toSVG(s.grid, s.colors)))),
   };
 }
@@ -87,11 +88,15 @@ export const BEHAVIOR_CASES: Array<{ text: string; attention: AttentionMode; red
   { text: "zzkt", attention: "never", reducedMotion: false, sleepAfterMs: 30000 },
   { text: "sleepy cloud", attention: "sometimes", reducedMotion: true, sleepAfterMs: 30000 },
   { text: "sagar", attention: "sometimes", reducedMotion: false, sleepAfterMs: 8000 },
+  { text: "sssnake", attention: "sometimes", reducedMotion: false, sleepAfterMs: 0 },
+  { text: "claude", attention: "always", reducedMotion: false, sleepAfterMs: 0 },
+  { text: "noodle", attention: "sometimes", reducedMotion: false, sleepAfterMs: 0 },
+  { text: "kick", attention: "sometimes", reducedMotion: false, sleepAfterMs: 20000 },
 ];
 
 export function behaviorTrace(c: (typeof BEHAVIOR_CASES)[number]): { hash: string; asleepSteps: number; blinks: number } {
   const s = generate(c.text);
-  const b = createBehavior({ seed: s.seed, traits: s.traits, attention: c.attention, reducedMotion: c.reducedMotion, sleepAfterMs: c.sleepAfterMs });
+  const b = createBehavior({ seed: s.seed, traits: s.traits, template: s.template, attention: c.attention, reducedMotion: c.reducedMotion, sleepAfterMs: c.sleepAfterMs });
   let trace = "";
   let asleepSteps = 0;
   let blinks = 0;
@@ -110,7 +115,7 @@ export function behaviorTrace(c: (typeof BEHAVIOR_CASES)[number]): { hash: strin
     const p = b.tick(100);
     if (b.attention === "asleep") asleepSteps++;
     if (p.blink) blinks++;
-    trace += `${p.mood},${p.gaze.x},${p.gaze.y},${p.blink ? 1 : 0},${p.bob ? 1 : 0},${b.attention};`;
+    trace += `${p.mood},${p.gaze.x},${p.gaze.y},${p.blink ? 1 : 0},${p.lift},${p.dx},${p.lean},${p.squash},${p.wave},${p.amp},${b.attention};`;
   }
   return { hash: hex(fnv1a(utf8(trace))), asleepSteps, blinks };
 }

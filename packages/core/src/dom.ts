@@ -90,7 +90,7 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
   };
 
   function draw(pose: Pose, force = false): void {
-    const key = `${pose.mood}|${pose.gaze?.x}|${pose.gaze?.y}|${pose.blink}|${pose.bob}|${opts.smooth}`;
+    const key = [pose.mood, pose.gaze?.x, pose.gaze?.y, pose.blink, pose.lift, pose.dx, pose.lean, pose.squash, pose.wave, pose.amp, opts.smooth].join("|");
     if (key === lastKey && !force) return;
     lastKey = key;
     lastPose = pose;
@@ -106,6 +106,7 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
     behavior = createBehavior({
       seed: sprite.seed,
       traits: sprite.traits,
+      template: sprite.template,
       attention: opts.attention,
       reducedMotion: reduced(),
       sleepAfterMs: opts.sleepAfterMs,

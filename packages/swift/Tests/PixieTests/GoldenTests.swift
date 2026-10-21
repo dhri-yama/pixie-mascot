@@ -28,7 +28,7 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
                 }
             }
             check(hex(s.seed), e["seed"] as! String, "seed")
-            check([s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos], e["traits"] as! [Int], "traits")
+            check([s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos, s.traits.slink], e["traits"] as! [Int], "traits")
             check(s.template.rawValue, e["template"] as! String, "template")
             check(s.mark.rawValue, e["mark"] as! String, "mark")
             check(s.eyeStyle.rawValue, e["eyeStyle"] as! String, "eyeStyle")
@@ -40,8 +40,9 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
             for mood in Mood.allCases {
                 check(gridHash(compose(s, Pose(mood: mood))), moods[mood.rawValue]!, "mood \(mood.rawValue)")
             }
-            let pose = Pose(mood: .thinking, gaze: Gaze(x: 1, y: -1), blink: true, bob: true)
+            let pose = Pose(mood: .thinking, gaze: Gaze(x: 1, y: -1), blink: true, lift: 2, dx: 1, lean: -2, squash: 1, wave: 3, amp: 1)
             check(gridHash(compose(s, pose)), e["pose"] as! String, "pose")
+            check(gridHash(compose(s, Pose(lean: 3, squash: -2))), e["squash"] as! String, "squash")
             check(hex(fnv1a(Array(toSVG(s.grid, colors: s.colors).utf8))), e["svg"] as! String, "svg")
         }
         #expect(failures == 0, "\(failures) golden mismatches")
@@ -59,7 +60,7 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
         let stepMs = behavior["stepMs"] as! Int
         let script = behavior["script"] as! [[String: Any]]
         let cases = behavior["cases"] as! [[String: Any]]
-        #expect(cases.count == 6)
+        #expect(cases.count == 10)
 
         for c in cases {
             let text = c["text"] as! String
@@ -70,7 +71,7 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
             default: .sometimes
             }
             let b = Behavior(
-                seed: sprite.seed, traits: sprite.traits, attention: mode,
+                seed: sprite.seed, traits: sprite.traits, template: sprite.template, attention: mode,
                 reducedMotion: c["reducedMotion"] as! Bool, sleepAfterMs: c["sleepAfterMs"] as! Int
             )
             var trace = ""
@@ -94,7 +95,7 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
                 let p = b.tick(stepMs)
                 if b.attention == .asleep { asleepSteps += 1 }
                 if p.blink { blinks += 1 }
-                trace += "\(p.mood.rawValue),\(p.gaze.x),\(p.gaze.y),\(p.blink ? 1 : 0),\(p.bob ? 1 : 0),\(b.attention.rawValue);"
+                trace += "\(p.mood.rawValue),\(p.gaze.x),\(p.gaze.y),\(p.blink ? 1 : 0),\(p.lift),\(p.dx),\(p.lean),\(p.squash),\(p.wave),\(p.amp),\(b.attention.rawValue);"
             }
             #expect(hex(fnv1a(Array(trace.utf8))) == (c["hash"] as! String), "behavior trace for \(text.debugDescription)")
             #expect(asleepSteps == (c["asleepSteps"] as! Int), "asleep steps for \(text.debugDescription)")

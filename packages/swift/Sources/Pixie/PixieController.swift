@@ -39,7 +39,7 @@ public final class PixieController: ObservableObject {
     }
 
     private static func makeBehavior(_ sprite: Sprite, _ s: Settings) -> Behavior {
-        Behavior(seed: sprite.seed, traits: sprite.traits, attention: s.attention, reducedMotion: s.reducedMotion, sleepAfterMs: s.sleepAfterMs)
+        Behavior(seed: sprite.seed, traits: sprite.traits, template: sprite.template, attention: s.attention, reducedMotion: s.reducedMotion, sleepAfterMs: s.sleepAfterMs)
     }
 
     /// Apply new settings. Only rebuilds the sprite or behavior when something changed.

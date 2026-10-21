@@ -104,11 +104,12 @@ describe("mountMascot", () => {
     expect(host.innerHTML).toBe("");
   });
 
-  it("respects reduced motion: no bobbing", () => {
+  it("respects reduced motion: no moving", () => {
     const m = mount({ text: "bubba", reducedMotion: true });
     for (let i = 0; i < 100; i++) {
       tick(100);
-      expect(m.pose.bob).toBe(false);
+      expect(m.pose.lift).toBe(0);
+      expect(m.pose.squash).toBe(0);
     }
   });
 

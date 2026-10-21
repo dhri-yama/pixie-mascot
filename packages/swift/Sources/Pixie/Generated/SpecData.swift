@@ -23,6 +23,15 @@ struct PropDef {
     let rows: [String]
 }
 
+struct MotionStyle {
+    let lift: [Int]
+    let dx: [Int]
+    let lean: [Int]
+    let squash: [Int]
+    let wave: String
+    let amp: Int
+}
+
 enum SpecData {
     /// For letters a...z: [round, sharp, heavy, light, rare].
     static let letters: [[Int]] = [
@@ -157,4 +166,17 @@ enum SpecData {
         "thinking": PropDef(x: 25, y: 0, rows: ["....aa", "....aa", "..aa..", "..aa..", "aa....", "aa...."]),
         "sleepy": PropDef(x: 25, y: 0, rows: ["aaaaaa", "....aa", "...aa.", "..aa..", "aa....", "aaaaaa"])
     ]
+
+    /// Idle motion loops (8 steps each), one per style.
+    static let motionStyles: [String: MotionStyle] = [
+        "bounce": MotionStyle(lift: [0, 2, 3, 3, 2, 0, 0, 0], dx: [0, 0, 0, 0, 0, 0, 0, 0], lean: [0, 0, 0, 0, 0, 0, 0, 0], squash: [1, -1, -1, 0, 0, 2, 1, 0], wave: "none", amp: 0),
+        "sway": MotionStyle(lift: [0, 0, 1, 0, 0, 0, 1, 0], dx: [0, 1, 2, 1, 0, -1, -2, -1], lean: [0, 0, 1, 1, 0, 0, -1, -1], squash: [0, 0, 0, 0, 0, 0, 0, 0], wave: "none", amp: 0),
+        "waddle": MotionStyle(lift: [0, 1, 0, 0, 0, 1, 0, 0], dx: [-1, -1, 0, 1, 1, 1, 0, -1], lean: [-2, -1, 0, 1, 2, 1, 0, -1], squash: [0, 0, 0, 0, 0, 0, 0, 0], wave: "none", amp: 0),
+        "slither": MotionStyle(lift: [0, 0, 0, 0, 0, 0, 0, 0], dx: [0, 0, 1, 1, 0, 0, -1, -1], lean: [0, 0, 0, 0, 0, 0, 0, 0], squash: [0, 0, 0, 0, 0, 0, 0, 0], wave: "step", amp: 2),
+        "float": MotionStyle(lift: [0, 1, 2, 3, 3, 2, 1, 0], dx: [0, 0, 1, 1, 0, 0, -1, -1], lean: [0, 0, 0, 0, 0, 0, 0, 0], squash: [0, 0, 0, 0, 0, 0, 0, 0], wave: "half", amp: 1),
+        "pulse": MotionStyle(lift: [0, 0, 0, 0, 0, 0, 0, 0], dx: [0, 0, 1, 0, 0, -1, 0, 0], lean: [0, 0, 0, 0, 0, 0, 0, 0], squash: [0, -1, -1, 0, 1, 1, 0, 0], wave: "none", amp: 0)
+    ]
+    static let breatheSquash: [Int] = [0, 0, 0, 1, 1, 0, 0, 0]
+    static let jumpLift: [Int] = [0, 3, 3, 3, 2, 1, 0, 0]
+    static let jumpSquash: [Int] = [1, -2, -1, -1, 0, 2, 1, 0]
 }

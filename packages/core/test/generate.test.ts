@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BOB, MOODS, SIZE, compose, describe as describeSprite, generate, gridToString, toSVG } from "../src";
+import { MAX_LIFT, MOODS, SIZE, TOP, compose, describe as describeSprite, generate, gridToString, toSVG } from "../src";
 import { createRng } from "../src/rng";
 
 const randomString = (rng: ReturnType<typeof createRng>): string => {
@@ -27,13 +27,13 @@ describe("generate", () => {
     expect(generate("  Bubba   Boo ").grid).toEqual(generate("bubba boo").grid);
   });
 
-  it("produces a 32x32 grid with valid palette indices and empty top rows for the bob", () => {
+  it("produces a 32x32 grid with valid palette indices and empty top rows for lifting", () => {
     for (const text of ["", " ", "a", "bubba", "jsakkkwaakiyy", "\u{1F600}", "The quick brown fox"]) {
       const s = generate(text);
       expect(s.grid).toHaveLength(SIZE * SIZE);
       expect(s.body).toHaveLength(SIZE * SIZE);
       for (const v of s.grid) expect(v).toBeLessThanOrEqual(7);
-      for (let i = 0; i < SIZE * BOB; i++) expect(s.body[i]).toBe(0);
+      for (let i = 0; i < SIZE * (TOP - 1); i++) expect(s.body[i]).toBe(0);
       expect(s.colors).toHaveLength(8);
     }
   });
@@ -97,7 +97,7 @@ describe("compose", () => {
       for (const blink of [false, true]) {
         for (const gx of [-1, 0, 1] as const) {
           for (const gy of [-1, 0, 1] as const) {
-            const g = compose(sprite, { mood, blink, gaze: { x: gx, y: gy }, bob: gx === 1 });
+            const g = compose(sprite, { mood, blink, gaze: { x: gx, y: gy }, lift: gx === 1 ? 2 : 0, squash: gy, lean: gx, dx: gy, wave: gx + 1, amp: gy === 1 ? 2 : 0 });
             expect(g).toHaveLength(SIZE * SIZE);
             for (const v of g) expect(v).toBeLessThanOrEqual(7);
           }
@@ -107,7 +107,7 @@ describe("compose", () => {
   });
   it("does not change the sprite it is given", () => {
     const before = gridToString(sprite.body);
-    compose(sprite, { mood: "happy", bob: true });
+    compose(sprite, { mood: "happy", lift: 2, squash: 1 });
     expect(gridToString(sprite.body)).toBe(before);
   });
   it("neutral compose equals the stored grid", () => {
@@ -119,12 +119,47 @@ describe("compose", () => {
   it("gaze moves the pupils", () => {
     expect(compose(sprite, { gaze: { x: 1, y: 0 } })).not.toEqual(compose(sprite, {}));
   });
-  it("bob shifts everything up by BOB rows", () => {
+  it("lift moves everything up by that many rows", () => {
     const flat = compose(sprite, {});
-    const bobbed = compose(sprite, { bob: true });
-    for (let y = BOB; y < SIZE; y++) {
-      for (let x = 0; x < SIZE; x++) expect(bobbed[(y - BOB) * SIZE + x]).toBe(flat[y * SIZE + x]);
+    for (const lift of [1, 2, MAX_LIFT]) {
+      const lifted = compose(sprite, { lift });
+      for (let y = lift; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) expect(lifted[(y - lift) * SIZE + x]).toBe(flat[y * SIZE + x]);
+      }
     }
+  });
+  it("squash shortens the body, stretch lengthens it, and the feet stay put", () => {
+    const height = (g: Uint8Array): number => {
+      let top = SIZE, bot = -1;
+      for (let i = 0; i < g.length; i++) if (g[i] !== 0) { top = Math.min(top, Math.floor(i / SIZE)); bot = Math.max(bot, Math.floor(i / SIZE)); }
+      return bot - top + 1;
+    };
+    const bottom = (g: Uint8Array): number => {
+      for (let y = SIZE - 1; y >= 0; y--) for (let x = 0; x < SIZE; x++) if (g[y * SIZE + x] !== 0) return y;
+      return -1;
+    };
+    const flat = compose(sprite, { mood: "neutral" });
+    const pressed = compose(sprite, { mood: "neutral", squash: 2 });
+    const stretched = compose(sprite, { mood: "neutral", squash: -2 });
+    expect(height(pressed)).toBe(height(flat) - 2);
+    expect(height(stretched)).toBe(height(flat) + 2);
+    expect(bottom(pressed)).toBe(bottom(flat));
+    expect(bottom(stretched)).toBe(bottom(flat));
+  });
+  it("lean tilts the top more than the feet; wave ripples rows; dx shifts the whole picture", () => {
+    const flat = compose(sprite, {});
+    const rowLeft = (g: Uint8Array, y: number): number => {
+      for (let x = 0; x < SIZE; x++) if (g[y * SIZE + x] !== 0) return x;
+      return -1;
+    };
+    const leaned = compose(sprite, { lean: 3 });
+    const topY = flat.findIndex((v) => v !== 0) / SIZE | 0;
+    let botY = SIZE - 1;
+    while (flat.slice(botY * SIZE, botY * SIZE + SIZE).every((v) => v === 0)) botY--;
+    expect(rowLeft(leaned, topY) - rowLeft(flat, topY)).toBeGreaterThan(rowLeft(leaned, botY) - rowLeft(flat, botY));
+    expect(rowLeft(compose(sprite, { dx: 2 }), botY)).toBe(rowLeft(flat, botY) + 2);
+    expect(compose(sprite, { amp: 2, wave: 1 })).not.toEqual(compose(sprite, { amp: 2, wave: 5 }));
+    expect(compose(sprite, { amp: 0, wave: 3 })).toEqual(flat);
   });
 });
 
@@ -137,14 +172,14 @@ describe("variety", () => {
   });
 
   it("uses every body shape and every mark", () => {
-    expect(new Set(samples.map((s) => s.template)).size).toBe(13);
+    expect(new Set(samples.map((s) => s.template)).size).toBe(22);
     expect(new Set(samples.map((s) => s.mark)).size).toBe(6);
   });
 
   it("gives round-sounding text soft shapes and sharp-sounding text pointy ones", () => {
-    const soft = new Set(["blob", "egg", "pear", "capsule", "dome", "cloud", "twin", "box"]);
+    const soft = new Set(["blob", "egg", "pear", "capsule", "dome", "cloud", "twin", "box", "mushroom", "bell", "drop", "jelly"]);
     for (const w of ["bubbanbbebb", "mumu", "moon", "noodle"]) expect(soft.has(generate(w).template), w).toBe(true);
-    for (const w of ["jsakkkwaakiyy", "zzkt", "kixtz", "quartz"]) expect(soft.has(generate(w).template), w).toBe(false);
+    for (const w of ["zzkt", "kixtz", "quartz", "kick"]) expect(soft.has(generate(w).template), w).toBe(false);
   });
 
   it("varies proportions a lot: tall, wide and in between", () => {
@@ -179,6 +214,17 @@ describe("variety", () => {
       }
     }
     expect(asymmetric).toBeGreaterThan(300);
+  });
+
+  it("makes snakes from hissing letters", () => {
+    const snaky = new Set(["serpent", "cobra", "caterpillar"]);
+    let hits = 0;
+    for (const w of ["sssnake", "hiss", "sizzle", "wally", "slither", "hush", "whistle", "shy", "yellow", "hello world"]) {
+      if (snaky.has(generate(w).template)) hits++;
+    }
+    expect(hits).toBeGreaterThanOrEqual(5);
+    expect(generate("sssnake").traits.slink).toBeGreaterThanOrEqual(30);
+    expect(generate("bubba").traits.slink).toBeLessThan(30);
   });
 
   it("almost never repeats a look", () => {

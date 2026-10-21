@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createBehavior, snapGaze, type Behavior, type BehaviorOptions } from "../src";
 
-const traits = { roundness: 50, heft: 50, energy: 50, chaos: 50 };
+const traits = { roundness: 50, heft: 50, energy: 50, chaos: 50, slink: 0 };
 const make = (o: Partial<BehaviorOptions> = {}): Behavior => createBehavior({ seed: 1234, traits, ...o });
 
 /** Run for `ms` in 100ms steps, returning every pose. */
@@ -38,10 +38,59 @@ describe("behavior", () => {
     expect(blinks).toBeLessThan(poses.length / 10);
   });
 
-  it("bobs while idle", () => {
-    const poses = run(make(), 5000);
-    expect(poses.some((p) => p.bob)).toBe(true);
-    expect(poses.some((p) => !p.bob)).toBe(true);
+  it("moves while idle, in a style that fits its body shape", () => {
+    const moved = (p: ReturnType<Behavior["tick"]>): boolean => p.lift !== 0 || p.dx !== 0 || p.lean !== 0 || p.squash !== 0 || p.amp !== 0;
+    for (const template of ["blob", "capsule", "cloud", "star", "serpent"] as const) {
+      const poses = run(make({ template }), 5000);
+      expect(poses.some(moved), template).toBe(true);
+      // It is a loop, not a freeze: the pose keeps changing.
+      expect(new Set(poses.map((p) => [p.lift, p.dx, p.lean, p.squash, p.wave].join())).size, template).toBeGreaterThan(2);
+    }
+    expect(make({ template: "serpent" }).motion).toBe("slither");
+    expect(make({ template: "cloud" }).motion).toBe("float");
+    expect(make({ template: "capsule" }).motion).toBe("waddle");
+    expect(make({ template: "star" }).motion).toBe("pulse");
+    expect(make({ template: "blob", traits: { ...traits, energy: 80 } }).motion).toBe("bounce");
+    expect(make({ template: "blob", traits: { ...traits, energy: 10 } }).motion).toBe("sway");
+  });
+
+  it("slithering shapes send a wave down the body; others do not", () => {
+    const waves = new Set(run(make({ template: "serpent" }), 5000).map((p) => p.wave));
+    expect(waves.size).toBeGreaterThan(4);
+    expect(run(make({ template: "blob" }), 5000).every((p) => p.amp === 0)).toBe(true);
+  });
+
+  it("jumps when happy or startled, droops when sad, breathes when asleep", () => {
+    const b = make({ template: "blob", sleepAfterMs: 0 });
+    run(b, 1000);
+    b.poke();
+    const jump = run(b, 700, 100);
+    expect(Math.max(...jump.map((p) => p.lift))).toBeGreaterThanOrEqual(3);
+    expect(jump.some((p) => p.squash < 0)).toBe(true);
+    const sad = make({ template: "blob", sleepAfterMs: 0 });
+    sad.setMood("sad");
+    run(sad, 1000);
+    expect(sad.tick(100).squash).toBe(1);
+    const asleep = make({ sleepAfterMs: 1000 });
+    const poses = run(asleep, 8000);
+    expect(poses.slice(-40).every((p) => p.lift === 0 && p.dx === 0 && p.lean === 0)).toBe(true);
+    expect(new Set(poses.slice(-40).map((p) => p.squash)).size).toBeGreaterThan(1);
+  });
+
+  it("blinks often: every two to four seconds, sometimes twice in a row", () => {
+    const poses = run(make(), 60000, 50);
+    let blinks = 0, doubles = 0, last = -10000;
+    poses.forEach((p, i) => {
+      const t = i * 50;
+      if (p.blink && !(i > 0 && poses[i - 1]!.blink)) {
+        blinks++;
+        if (t - last < 700) doubles++;
+        last = t;
+      }
+    });
+    expect(blinks).toBeGreaterThan(10); // about one every 4 s on average, was one every 6 s
+    expect(blinks).toBeLessThan(40);
+    expect(doubles).toBeGreaterThan(0);
   });
 
   it("follows the cursor and snaps its gaze", () => {
@@ -136,11 +185,11 @@ describe("behavior", () => {
     expect(b.mood).toBe("neutral");
   });
 
-  it("reduced motion: no bob, no blink, no wandering, gaze still follows", () => {
-    const b = make({ reducedMotion: true, sleepAfterMs: 0 });
+  it("reduced motion: no moving, no blink, no wandering, gaze still follows", () => {
+    const b = make({ reducedMotion: true, sleepAfterMs: 0, template: "serpent" });
     b.lookAt({ x: 1, y: 0 });
     const poses = run(b, 30000);
-    expect(poses.some((p) => p.bob || p.blink)).toBe(false);
+    expect(poses.some((p) => p.blink || p.lift || p.dx || p.lean || p.squash || p.amp)).toBe(false);
     expect(poses[poses.length - 1]!.gaze).toEqual({ x: 1, y: 0 });
   });
 

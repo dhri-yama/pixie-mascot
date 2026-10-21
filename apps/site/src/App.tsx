@@ -10,6 +10,7 @@ const GALLERY: Array<[string, string]> = [
   ["sharp", "jsakkkwaakiyy"], ["sharp", "zzkt"], ["sharp", "kick"], ["sharp", "quartz"], ["sharp", "jinx"], ["sharp", "kixtz"],
   ["names", "sagar"], ["names", "claude"], ["names", "alice"], ["names", "groot"], ["names", "tyler"], ["names", "muse"],
   ["phrases", "sleepy cloud"], ["phrases", "angry wasp"], ["phrases", "soft pillow"], ["phrases", "thunderbolt"], ["phrases", "hello world"], ["phrases", "123"],
+  ["slither", "sssnake"], ["slither", "hiss"], ["slither", "wally"], ["slither", "shy"], ["slither", "sizzle"], ["slither", "whistle"],
 ];
 
 function GalleryCard({ group, word }: { group: string; word: string }): ReactNode {
@@ -193,7 +194,7 @@ export function App(): ReactNode {
             <li><b>Normalize</b><span>Trim, fold case, hash. Equivalent text gives the same seed.</span></li>
             <li><b>Listen</b><span>Letters become roundness, heft, energy and chaos.</span></li>
             <li><b>Build</b><span>A 32x32 sprite: body, ears or horns, feet, face, palette.</span></li>
-            <li><b>Live</b><span>Blinks, bobs, follows the cursor, reacts to your UI.</span></li>
+            <li><b>Live</b><span>Blinks, hops, sways or slithers, follows the cursor, reacts to your UI.</span></li>
           </ol>
         </Section>
 

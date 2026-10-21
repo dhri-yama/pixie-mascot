@@ -42,11 +42,8 @@ public func compose(_ sprite: Sprite, _ pose: Pose = Pose()) -> [UInt8] {
         }
     }
 
-    // Bob: shift everything up pixieBob rows. The top rows are always empty, so nothing is lost.
-    if pose.bob {
-        g.replaceSubrange(0..<(pixieSize * (pixieSize - pixieBob)), with: g[(pixieSize * pixieBob)...])
-        for i in (pixieSize * (pixieSize - pixieBob))..<(pixieSize * pixieSize) { g[i] = 0 }
-    }
+    // Motion: squash and stretch, lean, wave, shift and lift, applied to the whole mascot (face included).
+    g = applyMotion(g, pose)
 
     // Props float in the top-right corner in the accent color.
     if let prop = SpecData.props[mood.rawValue] {
@@ -57,4 +54,58 @@ public func compose(_ sprite: Sprite, _ pose: Pose = Pose()) -> [UInt8] {
         }
     }
     return g
+}
+
+/// A sideways ripple, in columns, for eight rows in a row. Rows are offset by the wave phase.
+private let waveShift = [0, 1, 1, 0, 0, -1, -1, 0]
+
+/// Moves the whole picture. Integer only, so every platform agrees.
+/// 1. squash > 0 presses the body shorter, < 0 stretches it taller, keeping its feet on the same row;
+/// 2. each row is shifted sideways by lean (more at the top), the wave, and dx;
+/// 3. everything is lifted by `lift` rows. The top rows are always empty, so nothing is lost.
+public func applyMotion(_ g: [UInt8], _ pose: Pose) -> [UInt8] {
+    let squash = clamp(pose.squash, -3, 3)
+    let lean = clamp(pose.lean, -3, 3)
+    let dx = clamp(pose.dx, -3, 3)
+    let lift = clamp(pose.lift, 0, pixieMaxLift)
+    let amp = clamp(pose.amp, 0, 2)
+    let wave = pose.wave & 7
+    if squash == 0 && lean == 0 && dx == 0 && lift == 0 && amp == 0 { return g }
+
+    var top = -1, bot = -1
+    outer: for y in 0..<pixieSize {
+        for x in 0..<pixieSize where g[y * pixieSize + x] != 0 { top = y; break outer }
+    }
+    outer: for y in stride(from: pixieSize - 1, through: 0, by: -1) {
+        for x in 0..<pixieSize where g[y * pixieSize + x] != 0 { bot = y; break outer }
+    }
+    if top < 0 { return g }
+
+    var cur = g
+    if squash != 0 {
+        let h = bot - top + 1
+        let nh = clamp(h - squash, 4, bot + 1) // cannot grow above the top of the picture
+        var out = [UInt8](repeating: 0, count: pixieSize * pixieSize)
+        for i in 0..<nh {
+            let src = top + i * h / nh
+            let dst = bot - (nh - 1) + i
+            for x in 0..<pixieSize { out[dst * pixieSize + x] = cur[src * pixieSize + x] }
+        }
+        cur = out
+        top = bot - nh + 1
+    }
+
+    let span = max(1, bot - top)
+    var out = [UInt8](repeating: 0, count: pixieSize * pixieSize)
+    for y in top...bot {
+        let shift = lean * (bot - y) / span + waveShift[(y + wave) & 7] * amp + dx
+        let ny = y - lift
+        if ny < 0 { continue }
+        for x in 0..<pixieSize {
+            let v = cur[y * pixieSize + x]
+            let nx = x + shift
+            if v != 0 && nx >= 0 && nx < pixieSize { out[ny * pixieSize + nx] = v }
+        }
+    }
+    return out
 }

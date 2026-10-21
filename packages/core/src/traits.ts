@@ -8,6 +8,8 @@ export interface Traits {
   heft: number;
   energy: number;
   chaos: number;
+  /** Share (0..100) of hissing, slithering letters (s z x h w y l). High values can make a snake. */
+  slink: number;
 }
 
 export const clamp = (v: number, lo = 0, hi = 100): number => (v < lo ? lo : v > hi ? hi : v);
@@ -17,6 +19,7 @@ export const idiv = (a: number, b: number): number => Math.trunc(a / b);
 type LetterRow = readonly [number, number, number, number, number];
 const TABLE = letters as unknown as Record<string, LetterRow>;
 const VOWELS = "aeiou";
+const SLINKY = "szxhwyl";
 
 /**
  * Consumes exactly 4 rng draws (one jitter per trait), regardless of input.
@@ -27,7 +30,7 @@ export function computeTraits(norm: string, rng: Rng): Traits {
   const big = d.map((v) => (v % 61) - 30);
 
   let round = 0, sharp = 0, heavy = 0, light = 0, rare = 0;
-  let n = 0, cc = 0, mask = 0;
+  let n = 0, cc = 0, mask = 0, slinky = 0;
   let prevConsonant = false;
   for (const ch of norm) {
     const code = ch.codePointAt(0)!;
@@ -38,6 +41,7 @@ export function computeTraits(norm: string, rng: Rng): Traits {
     const row = TABLE[ch] as LetterRow;
     round += row[0]; sharp += row[1]; heavy += row[2]; light += row[3]; rare += row[4];
     n++;
+    if (SLINKY.includes(ch)) slinky++;
     mask |= 1 << (code - 97);
     const consonant = !VOWELS.includes(ch);
     if (consonant && prevConsonant) cc++;
@@ -50,6 +54,7 @@ export function computeTraits(norm: string, rng: Rng): Traits {
       heft: clamp(50 + big[1]!),
       energy: clamp(50 + big[2]!),
       chaos: clamp(50 + big[3]!),
+      slink: 0,
     };
   }
 
@@ -74,5 +79,5 @@ export function computeTraits(norm: string, rng: Rng): Traits {
   const variety = idiv(distinct * 100, n + 2);
   const chaos = clamp(variety + idiv(rareD, 2) + idiv(energy - 50, 4) + jc);
 
-  return { roundness, heft, energy, chaos };
+  return { roundness, heft, energy, chaos, slink: idiv(slinky * 100, n) };
 }

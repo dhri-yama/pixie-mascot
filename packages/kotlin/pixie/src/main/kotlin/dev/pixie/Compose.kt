@@ -46,17 +46,67 @@ public fun compose(sprite: Sprite, pose: Pose = Pose()): IntArray {
         }
     }
 
-    // Bob: shift everything up BOB rows. The top rows are always empty, so nothing is lost.
-    if (pose.bob) {
-        System.arraycopy(g, SIZE * BOB, g, 0, SIZE * (SIZE - BOB))
-        for (i in SIZE * (SIZE - BOB) until SIZE * SIZE) g[i] = 0
-    }
+    // Motion: squash and stretch, lean, wave, shift and lift, applied to the whole mascot (face included).
+    val moved = applyMotion(g, pose)
 
     // Props float in the top-right corner in the accent color.
     SpecData.props[mood.key]?.let { prop ->
         for ((i, row) in prop.rows.withIndex()) {
-            for ((j, ch) in row.withIndex()) if (ch != '.') put(g, prop.x + j, prop.y + i, Cell.ACCENT)
+            for ((j, ch) in row.withIndex()) if (ch != '.') put(moved, prop.x + j, prop.y + i, Cell.ACCENT)
         }
     }
-    return g
+    return moved
+}
+
+/** A sideways ripple, in columns, for eight rows in a row. Rows are offset by the wave phase. */
+private val WAVE = intArrayOf(0, 1, 1, 0, 0, -1, -1, 0)
+
+/**
+ * Moves the whole picture. Integer only, so every platform agrees.
+ * 1. squash > 0 presses the body shorter, < 0 stretches it taller, keeping its feet on the same row;
+ * 2. each row is shifted sideways by lean (more at the top), the wave, and dx;
+ * 3. everything is lifted by `lift` rows. The top rows are always empty, so nothing is lost.
+ */
+public fun applyMotion(g: IntArray, pose: Pose): IntArray {
+    val squash = clamp(pose.squash, -3, 3)
+    val lean = clamp(pose.lean, -3, 3)
+    val dx = clamp(pose.dx, -3, 3)
+    val lift = clamp(pose.lift, 0, MAX_LIFT)
+    val amp = clamp(pose.amp, 0, 2)
+    val wave = pose.wave and 7
+    if (squash == 0 && lean == 0 && dx == 0 && lift == 0 && amp == 0) return g
+
+    var top = -1
+    var bot = -1
+    run { for (y in 0 until SIZE) for (x in 0 until SIZE) if (g[y * SIZE + x] != 0) { top = y; return@run } }
+    run { for (y in SIZE - 1 downTo 0) for (x in 0 until SIZE) if (g[y * SIZE + x] != 0) { bot = y; return@run } }
+    if (top < 0) return g
+
+    var cur = g
+    if (squash != 0) {
+        val h = bot - top + 1
+        val nh = clamp(h - squash, 4, bot + 1) // cannot grow above the top of the picture
+        val out = IntArray(SIZE * SIZE)
+        for (i in 0 until nh) {
+            val src = top + i * h / nh
+            val dst = bot - (nh - 1) + i
+            for (x in 0 until SIZE) out[dst * SIZE + x] = cur[src * SIZE + x]
+        }
+        cur = out
+        top = bot - nh + 1
+    }
+
+    val span = maxOf(1, bot - top)
+    val out = IntArray(SIZE * SIZE)
+    for (y in top..bot) {
+        val shift = lean * (bot - y) / span + WAVE[(y + wave) and 7] * amp + dx
+        val ny = y - lift
+        if (ny < 0) continue
+        for (x in 0 until SIZE) {
+            val v = cur[y * SIZE + x]
+            val nx = x + shift
+            if (v != 0 && nx in 0 until SIZE) out[ny * SIZE + nx] = v
+        }
+    }
+    return out
 }
