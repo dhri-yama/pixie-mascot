@@ -40,56 +40,56 @@ The golden file hashes the **base grid with the neutral face**.
 ## Milestones and tasks
 
 ### M1 Foundations
-- [ ] pnpm workspace builds and tests (TypeScript strict, vitest, tsup)
-- [ ] `normalize`, `utf8`, `fnv1a`, `mulberry32` with unit tests and known vectors
-- [ ] `spec/sprite.md`, `spec/VERSIONS.md`
+- [x] pnpm workspace builds and tests (TypeScript strict, vitest, tsup)
+- [x] `normalize`, `utf8`, `fnv1a`, `mulberry32` with unit tests and known vectors
+- [x] `spec/sprite.md`, `spec/VERSIONS.md`
 
 ### M2 First sprite
-- [ ] `spec/traits.md`, letter tables in `spec/letters.json`
-- [ ] `traits(text)` returns integers 0..100, no floats
-- [ ] Body templates, parts data (`spec/parts/*.json`), mirror, mutations, outline/shade
-- [ ] Palette pool (`spec/palettes.json`) and presets
-- [ ] `generate(text, {version, palette})`
+- [x] `spec/traits.md`, letter tables in `spec/letters.json`
+- [x] `traits(text)` returns integers 0..100, no floats
+- [x] Body templates, parts data (`spec/parts/*.json`), mirror, mutations, outline/shade
+- [x] Palette pool (`spec/palettes.json`) and presets
+- [x] `generate(text, {version, palette})`
 
 ### M3 Render + lab
-- [ ] `toSVG` (merged runs, crisp edges, aria-label via `describe`)
-- [ ] `apps/lab`: grid of N words, word list tab, mood tab, trait readout
-- [ ] Look at it in the browser. Round words round? Sharp words sharp? Tune. **Gate.**
+- [x] `toSVG` (merged runs, crisp edges, aria-label via `describe`)
+- [x] `apps/lab`: grid of N words, word list tab, mood tab, trait readout
+- [x] Look at it in the browser. Round words round? Sharp words sharp? Tune. **Gate.**
 
 ### M4 Golden + variety
-- [ ] `spec/golden.json` (>= 500 inputs) + generator script + test
-- [ ] Property tests: repeatable, never throws, no NaN, grid always 16x16, indices in range
-- [ ] Variety script: 100k random strings, unique-sprite rate printed. Record in `spec/VERSIONS.md`
-- [ ] Mark v1 frozen only after the gate in M3 and the variety numbers are accepted
+- [x] `spec/golden.json` (>= 500 inputs) + generator script + test
+- [x] Property tests: repeatable, never throws, no NaN, grid always 16x16, indices in range
+- [x] Variety script: 100k random strings, unique-sprite rate printed. Record in `spec/VERSIONS.md`
+- [ ] Mark v1 frozen only after the owner reviews the art and accepts the variety numbers (still **draft**)
 
 ### M5 Expressions + behavior
-- [ ] `spec/faces/*.json`: eyes x 2 styles x 6 moods + blink, mouths, props
-- [ ] `compose()` with gaze (8 dirs, snapped), blink, bob, mood
-- [ ] Behavior engine (pure, seeded, no DOM): idle, blink timer, reactions, attention state machine
+- [x] `spec/faces/*.json`: eyes x 2 styles x 6 moods + blink, mouths, props
+- [x] `compose()` with gaze (8 dirs, snapped), blink, bob, mood
+- [x] Behavior engine (pure, seeded, no DOM): idle, blink timer, reactions, attention state machine
       (follow / wander / focus / asleep), mood priority (app > reaction > idle)
-- [ ] Unit tests with a fake clock
+- [x] Unit tests with a fake clock
 
 ### M6 React + auto
-- [ ] `packages/core` `./dom` entry: pointer tracking, delegated auto-reaction, `data-mascot` hints,
+- [x] `packages/core` `./dom` entry: pointer tracking, delegated auto-reaction, `data-mascot` hints,
       `prefers-reduced-motion`
-- [ ] `<pixie-mascot>` web component
-- [ ] `@pixie/react`: `<Mascot text mood size animated palette lookAt auto />`, SSR-safe
-- [ ] Component tests (jsdom)
+- [x] `<pixie-mascot>` web component
+- [x] `@pixie/react`: `<Mascot text mood size animated palette lookAt auto />`, SSR-safe
+- [x] Component tests (jsdom)
 
 ### M7 Website (`apps/site`)
-- [ ] Playground (live text, traits, mood picker, per-platform snippets)
-- [ ] Gallery, docs page, reaction demo
-- [ ] Builds clean; looked at in a browser
+- [x] Playground (live text, traits, mood picker, per-platform snippets)
+- [x] Gallery, docs page, reaction demo
+- [x] Builds clean; looked at in a browser
 
 ### M8 Native ports (spec + golden only, never new logic)
-- [ ] Swift package: generator, `PixieView`, `swift test` against `spec/golden.json`
-- [ ] Kotlin module: generator, Compose view, Gradle test against `spec/golden.json`
+- [x] Swift package: generator, behavior, `PixieView` + `PixieController` + `pixieTarget`; `swift test` (Swift Testing) against `spec/golden.json`. macOS verified; iOS SDK not available here
+- [x] Kotlin: `:pixie` (JVM) and `:pixie-compose` (Compose Multiplatform, desktop JVM verified by off-screen render); Gradle tests against `spec/golden.json`. Android target not built (no Android SDK)
 
 ### M9 Ship readiness
-- [ ] GitHub Actions per package, path-filtered
-- [ ] Root README with per-platform usage, versioning policy
-- [ ] Changesets config
-- [ ] Final run of every test suite; fill in CLAUDE.md "Commands"
+- [x] GitHub Actions per package, path-filtered (written; **never run on a real runner**)
+- [x] Root README with per-platform usage, versioning policy
+- [x] Changesets config
+- [x] Final run of every test suite; fill in CLAUDE.md "Commands" (see the end of this file)
 
 ## Definition of done (every milestone)
 
@@ -103,3 +103,20 @@ The golden file hashes the **base grid with the neutral face**.
 - Letter-sound mapping may look random. If the lab grid says so, stop and rework traits (M3 gate).
 - 16x16 may collide too often. Measure in M4 before freezing.
 - Native ports may drift. The golden file is the only authority.
+
+## Deviations from the plan, and what is still open
+
+- v1 is **not frozen**. It needs the owner's sign-off on the art first.
+- The golden file also holds SVG hashes and six scripted behavior traces; the lone-surrogate input became U+FFFD
+  (Swift strings cannot hold one). The TS unit tests still cover lone surrogates.
+- The behavior engine was ported to Swift and Kotlin too (not just the generator), because native mascots need
+  the same life; it is proven by the behavior traces.
+- Swift tests use Swift Testing, not XCTest (XCTest is missing from Command Line Tools).
+- The Kotlin core is Kotlin/JVM, not Multiplatform. Compose is Compose Multiplatform with a desktop JVM target.
+- Not verified: iOS compile, Android build, CI on real runners, publishing (`@pixie/*` names are unchecked).
+- Not built: meaning-aware mode, hosted SVG endpoint, extra moods (angry, love, ...), body squash/lean animation.
+
+## Final verification (2026-10-22)
+
+TypeScript 73 tests, Swift 10 tests, Kotlin 10 tests; all three pass `spec/golden.json`.
+Variety: 99.47% unique sprites over 100,000 distinct random strings.
