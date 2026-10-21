@@ -2,6 +2,10 @@ package dev.pixie
 
 // Spec: spec/sprite.md. Text -> Sprite. Pure function of (text, version, palette preset).
 // The order of rng draws is part of the algorithm: it must match the TypeScript core exactly.
+//
+// Geometry (32x32 grid): the left half is columns 0..15 and is mirrored onto 16..31. The body sits on the
+// ground (its last row is 25), feet use rows 26..29, row 30 is outline. Rows 0..3 are kept free for parts
+// that stick up, the outline above them, and the idle bob.
 
 private class PartRolls(val present: Int, val tone: Int, val part: Long, val dx: Long, val row: Long)
 
@@ -46,17 +50,17 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
         if (j >= row.length) return 0
         return PART_VALUE[row[j]] ?: 0
     }
-    val xl = 8 - half
+    val xl = AXIS + 1 - half
 
     when (part.slot) {
         "top" -> {
             val dx = part.dx[(rolls.dx % part.dx.size).toInt()]
-            val ax = 7 - dx
+            val ax = AXIS - dx
             if (ax < xl || topOf(g, ax) < 0) return
             val yb = topOf(g, ax) - 1
             for (i in 0 until h) {
                 val y = yb - (h - 1) + i
-                if (y < 2) continue
+                if (y < TOP) continue
                 for (j in 0 until w) {
                     val x = ax - (w - 1) + j
                     val v = cell(i, j)
@@ -67,18 +71,18 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
             for (j in 0 until w) {
                 val x = ax - (w - 1) + j
                 var lowest = -1
-                for (i in 0 until h) if (cell(i, j) != 0 && yb - (h - 1) + i >= 2) lowest = yb - (h - 1) + i
+                for (i in 0 until h) if (cell(i, j) != 0 && yb - (h - 1) + i >= TOP) lowest = yb - (h - 1) + i
                 if (lowest < 0 || x < 1) continue
                 var y = lowest + 1
                 var n = 0
-                while (y < SIZE && n < 4 && at(g, x, y) == 0) {
+                while (y < SIZE && n < 8 && at(g, x, y) == 0) {
                     put(g, x, y, Cell.BODY)
                     y++; n++
                 }
             }
         }
         "side" -> {
-            val ys = y0 + 2 + (rolls.row % maxOf(1, bh - 3)).toInt()
+            val ys = y0 + 4 + (rolls.row % maxOf(1, bh - 8)).toInt()
             val lx = leftOf(g, ys)
             if (lx < 0) return
             val xr = lx - 1
@@ -93,7 +97,7 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
                 for (j in 0 until w) if (cell(i, j) != 0) rightmost = xr - (w - 1) + j
                 var x = rightmost + 1
                 var n = 0
-                while (rightmost >= 0 && x <= 7 && n < 3 && at(g, x, ys + i) == 0) {
+                while (rightmost >= 0 && x <= AXIS && n < 6 && at(g, x, ys + i) == 0) {
                     put(g, x, ys + i, Cell.BODY)
                     x++; n++
                 }
@@ -101,13 +105,13 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
         }
         else -> {
             val dx = part.dx[(rolls.dx % part.dx.size).toInt()]
-            val ax = 7 - dx
+            val ax = AXIS - dx
             if (ax < xl) return
             val yb = bottomOf(g, ax)
             if (yb < 0) return
             for (i in 0 until h) {
                 val y = yb + 1 + i
-                if (y > 14) continue
+                if (y > GROUND + 4) continue
                 for (j in 0 until w) {
                     val x = ax - (w - 1) + j
                     val v = cell(i, j)
@@ -118,11 +122,11 @@ private fun placePart(g: IntArray, part: PartDef, rolls: PartRolls, y0: Int, bh:
             for (j in 0 until w) {
                 val x = ax - (w - 1) + j
                 var top = -1
-                for (i in h - 1 downTo 0) if (cell(i, j) != 0 && yb + 1 + i <= 14) top = yb + 1 + i
+                for (i in h - 1 downTo 0) if (cell(i, j) != 0 && yb + 1 + i <= GROUND + 4) top = yb + 1 + i
                 if (top < 0 || x < 1) continue
                 var y = top - 1
                 var n = 0
-                while (y >= 0 && n < 3 && at(g, x, y) == 0) {
+                while (y >= 0 && n < 6 && at(g, x, y) == 0) {
                     put(g, x, y, Cell.BODY)
                     y--; n++
                 }
@@ -139,13 +143,16 @@ private fun pickPart(slot: String, wantSoft: Boolean, rolls: PartRolls, chaos: I
     return pool[(rolls.part % pool.size).toInt()]
 }
 
-/** Widest eye spacing (at most [pref], at least 1) whose left eye sits fully on the body. */
+/**
+ * Widest eye spacing (at most [pref], at least 1) whose left eye sits fully on the body, moving the eyes
+ * down up to four rows when the body is too narrow. The eye box is 6x6; a "dot" eye needs its lower-right 4x4.
+ */
 private fun fitEyes(fill: IntArray, style: EyeStyle, eyeY0: Int, pref: Int): Pair<Int, Int> {
-    val offsets = if (style == EyeStyle.Big) listOf(0, 1, 2) else listOf(1, 2)
+    val offsets = if (style == EyeStyle.Big) listOf(0, 1, 2, 3, 4, 5) else listOf(2, 3, 4, 5)
     for (margin in listOf(1, 0)) {
-        for (dy in 0..2) {
+        for (dy in 0..4) {
             for (ei in pref downTo 1) {
-                val lx = 7 - ei - 2
+                val lx = AXIS - ei - 5
                 var ok = true
                 for (r in offsets) {
                     for (c in offsets) if (at(fill, lx + c, eyeY0 + dy + r) == 0) ok = false
@@ -174,17 +181,16 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
 
     // Body shape.
     val eff = clamp(roundness + (rng.int(15) - 7))
-    val heightRoll = rng.int(2)
-    val chamferRoll = rng.int(2)
-    val wedgeRoll = rng.int(2)
+    val heightRoll = rng.int(3)
+    val chamferRoll = rng.int(3)
+    val wedgeRoll = rng.int(3)
     val template = if (eff >= 68) Template.Blob else if (eff >= 45) Template.Box else if (eff >= 25) Template.Wedge else Template.Gem
-    val sizeIdx = if (heft < 34) 0 else if (heft < 67) 1 else 2
-    val half = 4 + sizeIdx
-    val bh = intArrayOf(9, 8, 7)[sizeIdx] - heightRoll
-    val y0 = 13 - bh
-    val xl = 8 - half
-    val k = 1 + chamferRoll
-    val halfTop = minOf(half, 1 + wedgeRoll)
+    val half = 8 + heft * 5 / 100 // 8..13 columns on the left side: 16..26 wide
+    val bh = 17 - heft * 5 / 100 - heightRoll // 10..17 rows tall
+    val y0 = GROUND - bh + 1
+    val xl = AXIS + 1 - half
+    val k = 2 + chamferRoll // chamfer size of the box
+    val halfTop = minOf(half, 3 + wedgeRoll) // half width at the top of the wedge
 
     val g = IntArray(SIZE * SIZE)
     for (r in 0 until bh) {
@@ -212,7 +218,7 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
     }
 
     // Mirror left half onto the right half.
-    for (y in 0 until SIZE) for (x in 0 until 8) put(g, 15 - x, y, at(g, x, y))
+    for (y in 0 until SIZE) for (x in 0..AXIS) put(g, SIZE - 1 - x, y, at(g, x, y))
 
     // Chaos breaks symmetry.
     val mutations = chaos / 25
@@ -221,8 +227,8 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         val pickRoll = rng.next().toLong()
         val cands = ArrayList<Int>()
         val chip = typeRoll % 2 == 0L
-        for (y in 2 until 15) {
-            for (x in 8 until 16) {
+        for (y in TOP until GROUND + 5) {
+            for (x in AXIS + 1 until SIZE) {
                 val v = at(g, x, y)
                 if (chip) {
                     val edge = at(g, x - 1, y) == 0 || at(g, x + 1, y) == 0 || at(g, x, y - 1) == 0 || at(g, x, y + 1) == 0
@@ -235,17 +241,23 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
         if (cands.isNotEmpty()) g[cands[(pickRoll % cands.size).toInt()]] = if (chip) Cell.CLEAR else Cell.BODY
     }
 
-    // Shade bottoms, one highlight pixel, then outline. Each pass reads a snapshot.
+    // Shade the bottom two rows of every downward-facing edge, add a three-pixel shine, then outline.
+    // Each pass reads a snapshot.
     val snap1 = g.copyOf()
     for (y in 0 until SIZE) {
         for (x in 0 until SIZE) {
-            if (at(snap1, x, y) == Cell.BODY && at(snap1, x, y + 1) == 0) put(g, x, y, Cell.SHADE)
+            if (at(snap1, x, y) == Cell.BODY && (at(snap1, x, y + 1) == 0 || at(snap1, x, y + 2) == 0)) put(g, x, y, Cell.SHADE)
         }
     }
     scan@ for (y in 0 until SIZE) {
         for (x in 0 until SIZE) {
-            if (at(g, x, y) == Cell.BODY && at(g, x + 1, y) == Cell.BODY && at(g, x, y + 1) == Cell.BODY && at(g, x - 1, y) != 0) {
+            if (at(g, x, y) == Cell.BODY && at(g, x + 1, y) == Cell.BODY && at(g, x + 2, y) == Cell.BODY &&
+                at(g, x, y + 1) == Cell.BODY && at(g, x + 1, y + 1) == Cell.BODY && at(g, x, y + 2) == Cell.BODY &&
+                at(g, x - 1, y) != 0
+            ) {
                 put(g, x, y, Cell.LIGHT)
+                put(g, x + 1, y, Cell.LIGHT)
+                put(g, x, y + 1, Cell.LIGHT)
                 break@scan
             }
         }
@@ -261,11 +273,15 @@ public fun generate(text: String, version: Int = VERSION, palette: Preset? = nul
     }
 
     // Face anchors.
-    val eyeInnerRoll = rng.int(2)
+    val eyeInnerRoll = rng.int(3)
     val eyeStyleRoll = rng.int(40)
     val eyeStyle = if (clamp(roundness + eyeStyleRoll - 20) >= 50) EyeStyle.Big else EyeStyle.Dot
-    val (fitY, fitInner) = fitEyes(snap2, eyeStyle, y0 + bh * 30 / 100 + (if (template == Template.Gem) 1 else 0), 1 + eyeInnerRoll + (if (half == 6) 1 else 0))
-    val anchors = Anchors(fitY, fitInner, minOf(fitY + 4, y0 + bh - 2))
+    val (fitY, fitInner) = fitEyes(
+        snap2, eyeStyle,
+        y0 + bh * 30 / 100 + (if (template == Template.Gem) 2 else 0),
+        2 + eyeInnerRoll + (if (half >= 11) 2 else 0),
+    )
+    val anchors = Anchors(fitY, fitInner, minOf(fitY + 8, y0 + bh - 4))
 
     // Colors.
     val entryRoll = rng.next().toLong()

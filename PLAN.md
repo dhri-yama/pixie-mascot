@@ -29,7 +29,7 @@ of the text to shape. Do not copy its code without checking the license terms.
 
 | Topic | Decision | Why |
 |---|---|---|
-| Representation | Sprite = grid of palette indices (start 16x16) + palette | Integer-only, so identical on every platform |
+| Representation | Sprite = grid of palette indices (32x32, was 16x16 in the first draft) + palette | Integer-only, so identical on every platform |
 | Core language | TypeScript, zero dependencies | Fastest to iterate, runs everywhere |
 | Native | Hand ports to Swift and Kotlin, checked by golden file | No FFI/Rust unless the algorithm outgrows hand porting |
 | Randomness | One seeded PRNG written by us. `Math.random()` is banned in core. | Determinism |
@@ -158,7 +158,7 @@ Each milestone ends with something you can look at or a green test.
 | Risk | Mitigation |
 |---|---|
 | Phonetic mapping looks random | Milestone 3 gate, judged by eye on the lab grid |
-| 16x16 gives too many collisions | Milestone 4 measurement, move to 24x24 or add parts |
+| Grid too coarse or too many collisions | Moved from 16x16 to 32x32 (collisions 0.5% -> 0.04%) |
 | Native ports drift | Integer-only core, shared golden file blocks release |
 | Art quality | Hand-authored parts, not purely procedural pixels |
 | Offensive/unfortunate shapes | Review parts library; fuzz-render and eyeball outliers |

@@ -1,5 +1,9 @@
 // Spec: spec/sprite.md. Text -> Sprite. Pure function of (text, version, palette preset).
-// The order of rng draws below is part of the algorithm: never reorder or add draws in v1.
+// The order of rng draws below is part of the algorithm: never reorder or add draws once v1 is frozen.
+//
+// Geometry (32x32 grid): the left half is columns 0..15 and is mirrored onto 16..31. The body sits on the
+// ground (its last row is 25), feet use rows 26..29, row 30 is outline. Rows 0..3 are kept free for parts
+// that stick up, the outline above them, and the idle bob.
 
 import partsData from "../../../spec/parts/parts.json";
 import paletteData from "../../../spec/palettes.json";
@@ -9,7 +13,7 @@ import { createRng } from "./rng";
 import { clamp, computeTraits, idiv } from "./traits";
 import { compose } from "./compose";
 import {
-  ACCENT, BODY, CLEAR, LIGHT, OUTLINE, SHADE, SIZE, VERSION,
+  ACCENT, AXIS, BODY, CLEAR, GROUND, LIGHT, OUTLINE, SHADE, SIZE, TOP, VERSION,
   type Anchors, type EyeStyle, type GenerateOptions, type Grid, type Sprite, type Template,
 } from "./types";
 
@@ -55,7 +59,7 @@ function bodyCell(t: Template, c: number, r: number, half: number, bh: number, k
     case "gem":
       return dx * bh + Math.abs(dy) * bw <= bw * bh;
     case "box":
-      return c + Math.min(r, bh - 1 - r) >= k || (c >= k) || Math.min(r, bh - 1 - r) >= k;
+      return c + Math.min(r, bh - 1 - r) >= k || c >= k || Math.min(r, bh - 1 - r) >= k;
     case "wedge":
       return half - c <= halfTop + idiv((half - halfTop) * r, bh - 1);
   }
@@ -73,16 +77,16 @@ function placePart(g: Grid, part: Part, rolls: PartRolls, y0: number, bh: number
   const h = part.rows.length;
   const w = (part.rows[0] ?? "").length;
   const cell = (i: number, j: number): number => PART_VALUE[part.rows[i]?.[j] ?? "."] ?? 0;
-  const xl = 8 - half;
+  const xl = AXIS + 1 - half;
 
   if (part.slot === "top") {
     const dx = part.dx[rolls.dx % part.dx.length] ?? 0;
-    const ax = 7 - dx;
+    const ax = AXIS - dx;
     if (ax < xl || topOf(g, ax) < 0) return;
     const yb = topOf(g, ax) - 1;
     for (let i = 0; i < h; i++) {
       const y = yb - (h - 1) + i;
-      if (y < 2) continue;
+      if (y < TOP) continue;
       for (let j = 0; j < w; j++) {
         const x = ax - (w - 1) + j;
         const v = cell(i, j);
@@ -93,12 +97,12 @@ function placePart(g: Grid, part: Part, rolls: PartRolls, y0: number, bh: number
     for (let j = 0; j < w; j++) {
       const x = ax - (w - 1) + j;
       let lowest = -1;
-      for (let i = 0; i < h; i++) if (cell(i, j) !== 0 && yb - (h - 1) + i >= 2) lowest = yb - (h - 1) + i;
+      for (let i = 0; i < h; i++) if (cell(i, j) !== 0 && yb - (h - 1) + i >= TOP) lowest = yb - (h - 1) + i;
       if (lowest < 0 || x < 1) continue;
-      for (let y = lowest + 1, n = 0; y < SIZE && n < 4 && at(g, x, y) === CLEAR; y++, n++) put(g, x, y, BODY);
+      for (let y = lowest + 1, n = 0; y < SIZE && n < 8 && at(g, x, y) === CLEAR; y++, n++) put(g, x, y, BODY);
     }
   } else if (part.slot === "side") {
-    const ys = y0 + 2 + (rolls.row % Math.max(1, bh - 3));
+    const ys = y0 + 4 + (rolls.row % Math.max(1, bh - 8));
     const lx = leftOf(g, ys);
     if (lx < 0) return;
     const xr = lx - 1;
@@ -111,19 +115,19 @@ function placePart(g: Grid, part: Part, rolls: PartRolls, y0: number, bh: number
       // Reach back to the body on this row.
       let rightmost = -1;
       for (let j = 0; j < w; j++) if (cell(i, j) !== 0) rightmost = xr - (w - 1) + j;
-      for (let x = rightmost + 1, n = 0; rightmost >= 0 && x <= 7 && n < 3 && at(g, x, ys + i) === CLEAR; x++, n++) {
+      for (let x = rightmost + 1, n = 0; rightmost >= 0 && x <= AXIS && n < 6 && at(g, x, ys + i) === CLEAR; x++, n++) {
         put(g, x, ys + i, BODY);
       }
     }
   } else {
     const dx = part.dx[rolls.dx % part.dx.length] ?? 0;
-    const ax = 7 - dx;
+    const ax = AXIS - dx;
     if (ax < xl) return;
     const yb = bottomOf(g, ax);
     if (yb < 0) return;
     for (let i = 0; i < h; i++) {
       const y = yb + 1 + i;
-      if (y > 14) continue;
+      if (y > GROUND + 4) continue;
       for (let j = 0; j < w; j++) {
         const x = ax - (w - 1) + j;
         const v = cell(i, j);
@@ -134,9 +138,9 @@ function placePart(g: Grid, part: Part, rolls: PartRolls, y0: number, bh: number
     for (let j = 0; j < w; j++) {
       const x = ax - (w - 1) + j;
       let top = -1;
-      for (let i = h - 1; i >= 0; i--) if (cell(i, j) !== 0 && yb + 1 + i <= 14) top = yb + 1 + i;
+      for (let i = h - 1; i >= 0; i--) if (cell(i, j) !== 0 && yb + 1 + i <= GROUND + 4) top = yb + 1 + i;
       if (top < 0 || x < 1) continue;
-      for (let y = top - 1, n = 0; y >= 0 && n < 3 && at(g, x, y) === CLEAR; y--, n++) put(g, x, y, BODY);
+      for (let y = top - 1, n = 0; y >= 0 && n < 6 && at(g, x, y) === CLEAR; y--, n++) put(g, x, y, BODY);
     }
   }
 }
@@ -150,15 +154,16 @@ function pickPart(slot: Part["slot"], wantSoft: boolean, rolls: PartRolls, chaos
 
 /**
  * Pick the widest eye spacing (at most `pref`, at least 1) whose left eye sits fully on the body,
- * moving the eyes down up to two rows when the body is too narrow at the preferred row.
+ * moving the eyes down up to four rows when the body is too narrow at the preferred row.
+ * The eye box is 6x6; a "dot" eye only needs its lower-right 4x4 on the body.
  */
 function fitEyes(fill: Grid, style: EyeStyle, eyeY0: number, pref: number): { eyeY: number; eyeInner: number } {
-  const offsets = style === "big" ? [0, 1, 2] : [1, 2];
+  const offsets = style === "big" ? [0, 1, 2, 3, 4, 5] : [2, 3, 4, 5];
   // First try to keep one body pixel between the eye and the edge, then settle for touching it.
   for (const margin of [1, 0]) {
-    for (let dy = 0; dy <= 2; dy++) {
+    for (let dy = 0; dy <= 4; dy++) {
       for (let ei = pref; ei >= 1; ei--) {
-        const lx = 7 - ei - 2;
+        const lx = AXIS - ei - 5;
         let ok = true;
         for (const r of offsets) {
           for (const c of offsets) if (at(fill, lx + c, eyeY0 + dy + r) === CLEAR) ok = false;
@@ -184,17 +189,16 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
 
   // Body shape.
   const eff = clamp(roundness + (rng.int(15) - 7));
-  const heightRoll = rng.int(2);
-  const chamferRoll = rng.int(2);
-  const wedgeRoll = rng.int(2);
+  const heightRoll = rng.int(3);
+  const chamferRoll = rng.int(3);
+  const wedgeRoll = rng.int(3);
   const template: Template = eff >= 68 ? "blob" : eff >= 45 ? "box" : eff >= 25 ? "wedge" : "gem";
-  const sizeIdx = heft < 34 ? 0 : heft < 67 ? 1 : 2;
-  const half = 4 + sizeIdx;
-  const bh = [9, 8, 7][sizeIdx]! - heightRoll;
-  const y0 = 13 - bh;
-  const xl = 8 - half;
-  const k = 1 + chamferRoll;
-  const halfTop = Math.min(half, 1 + wedgeRoll);
+  const half = 8 + idiv(heft * 5, 100); // 8..13 columns on the left side: 16..26 wide
+  const bh = 17 - idiv(heft * 5, 100) - heightRoll; // 10..17 rows tall
+  const y0 = GROUND - bh + 1;
+  const xl = AXIS + 1 - half;
+  const k = 2 + chamferRoll; // chamfer size of the box
+  const halfTop = Math.min(half, 3 + wedgeRoll); // half width at the top of the wedge
 
   const g: Grid = new Uint8Array(SIZE * SIZE);
   for (let r = 0; r < bh; r++) {
@@ -226,7 +230,7 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
   }
 
   // Mirror left half onto the right half.
-  for (let y = 0; y < SIZE; y++) for (let x = 0; x < 8; x++) put(g, 15 - x, y, at(g, x, y));
+  for (let y = 0; y < SIZE; y++) for (let x = 0; x <= AXIS; x++) put(g, SIZE - 1 - x, y, at(g, x, y));
 
   // Chaos breaks symmetry.
   const mutations = idiv(chaos, 25);
@@ -235,8 +239,8 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
     const pickRoll = rng.next();
     const cands: number[] = [];
     const chip = typeRoll % 2 === 0;
-    for (let y = 2; y < 15; y++) {
-      for (let x = 8; x < 16; x++) {
+    for (let y = TOP; y < GROUND + 5; y++) {
+      for (let x = AXIS + 1; x < SIZE; x++) {
         const v = at(g, x, y);
         if (chip) {
           const edge = at(g, x - 1, y) === 0 || at(g, x + 1, y) === 0 || at(g, x, y - 1) === 0 || at(g, x, y + 1) === 0;
@@ -250,17 +254,24 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
     if (idx !== undefined) g[idx] = chip ? CLEAR : BODY;
   }
 
-  // Shade bottoms, one highlight pixel, then outline. Each pass reads a snapshot.
+  // Shade the bottom two rows of every downward-facing edge, add a three-pixel shine, then outline.
+  // Each pass reads a snapshot.
   const snap1 = g.slice();
   for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
-      if (at(snap1, x, y) === BODY && at(snap1, x, y + 1) === CLEAR) put(g, x, y, SHADE);
+      if (at(snap1, x, y) === BODY && (at(snap1, x, y + 1) === CLEAR || at(snap1, x, y + 2) === CLEAR)) put(g, x, y, SHADE);
     }
   }
   scan: for (let y = 0; y < SIZE; y++) {
     for (let x = 0; x < SIZE; x++) {
-      if (at(g, x, y) === BODY && at(g, x + 1, y) === BODY && at(g, x, y + 1) === BODY && at(g, x - 1, y) !== CLEAR) {
+      if (
+        at(g, x, y) === BODY && at(g, x + 1, y) === BODY && at(g, x + 2, y) === BODY &&
+        at(g, x, y + 1) === BODY && at(g, x + 1, y + 1) === BODY && at(g, x, y + 2) === BODY &&
+        at(g, x - 1, y) !== CLEAR
+      ) {
         put(g, x, y, LIGHT);
+        put(g, x + 1, y, LIGHT);
+        put(g, x, y + 1, LIGHT);
         break scan;
       }
     }
@@ -274,19 +285,19 @@ export function generate(text: string, options: GenerateOptions = {}): Sprite {
   }
 
   // Face anchors.
-  const eyeInnerRoll = rng.int(2);
+  const eyeInnerRoll = rng.int(3);
   const eyeStyleRoll = rng.int(40);
   const eyeStyle: EyeStyle = clamp(roundness + eyeStyleRoll - 20) >= 50 ? "big" : "dot";
   const fit = fitEyes(
     snap2,
     eyeStyle,
-    y0 + idiv(bh * 30, 100) + (template === "gem" ? 1 : 0),
-    1 + eyeInnerRoll + (half === 6 ? 1 : 0),
+    y0 + idiv(bh * 30, 100) + (template === "gem" ? 2 : 0),
+    2 + eyeInnerRoll + (half >= 11 ? 2 : 0),
   );
   const anchors: Anchors = {
     eyeY: fit.eyeY,
     eyeInner: fit.eyeInner,
-    mouthY: Math.min(fit.eyeY + 4, y0 + bh - 2),
+    mouthY: Math.min(fit.eyeY + 8, y0 + bh - 4),
   };
 
   // Colors.

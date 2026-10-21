@@ -55,26 +55,26 @@ enum SpecData {
     ]
 
     static let parts: [PartDef] = [
-        PartDef(id: "ears", slot: "top", tone: "soft", dx: [2, 3], rows: ["##", "##"]),
-        PartDef(id: "bud", slot: "top", tone: "soft", dx: [0], rows: ["a", "#"]),
-        PartDef(id: "bumps", slot: "top", tone: "soft", dx: [1, 2, 3], rows: ["#"]),
-        PartDef(id: "leaf", slot: "top", tone: "soft", dx: [1, 2], rows: ["#.", "##"]),
-        PartDef(id: "horns", slot: "top", tone: "sharp", dx: [1, 2, 3], rows: ["#.", "#.", "##"]),
-        PartDef(id: "spike", slot: "top", tone: "sharp", dx: [0, 1, 2], rows: ["#", "#", "#"]),
-        PartDef(id: "crest", slot: "top", tone: "sharp", dx: [1, 2, 3], rows: ["#", "#"]),
-        PartDef(id: "fang", slot: "top", tone: "sharp", dx: [2, 3], rows: [".#", "#.", "##"]),
-        PartDef(id: "nubs", slot: "side", tone: "soft", dx: [], rows: ["#"]),
-        PartDef(id: "arms", slot: "side", tone: "soft", dx: [], rows: ["##"]),
-        PartDef(id: "paws", slot: "side", tone: "soft", dx: [], rows: ["##", "##"]),
-        PartDef(id: "spines", slot: "side", tone: "sharp", dx: [], rows: ["#.", "##"]),
-        PartDef(id: "fins", slot: "side", tone: "sharp", dx: [], rows: [".#", "##", "#."]),
-        PartDef(id: "blades", slot: "side", tone: "sharp", dx: [], rows: ["#", "#"]),
-        PartDef(id: "feet", slot: "bottom", tone: "soft", dx: [1, 2, 3], rows: ["##"]),
-        PartDef(id: "stubs", slot: "bottom", tone: "soft", dx: [1, 2, 3], rows: ["#", "#"]),
-        PartDef(id: "paddles", slot: "bottom", tone: "soft", dx: [2, 3], rows: ["##", "##"]),
-        PartDef(id: "claws", slot: "bottom", tone: "sharp", dx: [1, 2, 3], rows: ["#.", "##"]),
-        PartDef(id: "legs", slot: "bottom", tone: "sharp", dx: [1, 2, 3], rows: ["#", "#"]),
-        PartDef(id: "stilts", slot: "bottom", tone: "sharp", dx: [2, 3], rows: ["#", "#", "#"])
+        PartDef(id: "ears", slot: "top", tone: "soft", dx: [4, 6], rows: [".##.", "####", "####", "####"]),
+        PartDef(id: "bud", slot: "top", tone: "soft", dx: [0], rows: ["aa", "aa", ".#", ".#"]),
+        PartDef(id: "bumps", slot: "top", tone: "soft", dx: [2, 4, 6], rows: ["##", "##"]),
+        PartDef(id: "leaf", slot: "top", tone: "soft", dx: [3, 5], rows: ["#.", "##", "##"]),
+        PartDef(id: "horns", slot: "top", tone: "sharp", dx: [3, 5, 7], rows: ["#..", "#..", "##.", "##.", "###", "###"]),
+        PartDef(id: "spike", slot: "top", tone: "sharp", dx: [0, 2, 4], rows: [".#", ".#", ".#", "##", "##", "##"]),
+        PartDef(id: "crest", slot: "top", tone: "sharp", dx: [2, 4, 6], rows: ["#.", "#.", "##", "##"]),
+        PartDef(id: "fang", slot: "top", tone: "sharp", dx: [4, 6], rows: ["..#", ".##", "###", "###"]),
+        PartDef(id: "nubs", slot: "side", tone: "soft", dx: [], rows: ["##", "##"]),
+        PartDef(id: "arms", slot: "side", tone: "soft", dx: [], rows: ["####", "####"]),
+        PartDef(id: "paws", slot: "side", tone: "soft", dx: [], rows: ["###", "###", "###"]),
+        PartDef(id: "spines", slot: "side", tone: "sharp", dx: [], rows: ["#..", "##.", "###"]),
+        PartDef(id: "fins", slot: "side", tone: "sharp", dx: [], rows: [".##", "###", "##."]),
+        PartDef(id: "blades", slot: "side", tone: "sharp", dx: [], rows: ["#", "#", "#", "#"]),
+        PartDef(id: "feet", slot: "bottom", tone: "soft", dx: [3, 5, 7], rows: ["####", "####"]),
+        PartDef(id: "stubs", slot: "bottom", tone: "soft", dx: [3, 5, 7], rows: ["##", "##", "##", "##"]),
+        PartDef(id: "paddles", slot: "bottom", tone: "soft", dx: [4, 6], rows: ["####", "####", "####"]),
+        PartDef(id: "claws", slot: "bottom", tone: "sharp", dx: [3, 5, 7], rows: ["###", "##.", "#.."]),
+        PartDef(id: "legs", slot: "bottom", tone: "sharp", dx: [3, 5, 7], rows: ["#", "#", "#", "#"]),
+        PartDef(id: "stilts", slot: "bottom", tone: "sharp", dx: [4, 6], rows: ["#", "#", "#", "#", "#", "#"])
     ]
 
     static let white = "#f6f6f2"
@@ -112,35 +112,35 @@ enum SpecData {
     /// eyes[style][mood] is a 3x3 pattern for the left eye.
     static let eyes: [String: [String: [String]]] = [
         "dot": [
-        "neutral": ["...", ".pp", ".pp"],
-        "happy": ["...", ".k.", "k.k"],
-        "sad": ["..k", ".pp", ".pp"],
-        "surprised": ["kkk", "kwk", "kkk"],
-        "thinking": ["pp.", "pp.", "..."],
-        "sleepy": ["...", "...", "kkk"],
-        "blink": ["...", "...", "kkk"]
+        "neutral": ["......", "......", "..ppp.", "..ppp.", "..ppp.", "......"],
+        "happy": ["......", "..kk..", ".k..k.", "k....k", "......", "......"],
+        "sad": ["....kk", "..kk..", "..ppp.", "..ppp.", "..ppp.", "......"],
+        "surprised": ["kkkkkk", "kwwwwk", "kwwwwk", "kwwwwk", "kwwwwk", "kkkkkk"],
+        "thinking": ["..kkk.", "......", "ppp...", "ppp...", "ppp...", "......"],
+        "sleepy": ["......", "......", "......", "......", "kkkkkk", "......"],
+        "blink": ["......", "......", "......", "......", "kkkkkk", "......"]
         ],
         "big": [
-        "neutral": ["www", "wpw", "www"],
-        "happy": ["...", ".k.", "k.k"],
-        "sad": ["..k", "wpw", "www"],
-        "surprised": ["kkk", "kwk", "kkk"],
-        "thinking": ["k..", "wpw", "www"],
-        "sleepy": ["...", "...", "kkk"],
-        "blink": ["...", "...", "kkk"]
+        "neutral": [".wwww.", "wwwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+        "happy": ["......", "..kk..", ".k..k.", "k....k", "......", "......"],
+        "sad": ["....kk", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+        "surprised": ["kkkkkk", "kwwwwk", "kwkkwk", "kwkkwk", "kwwwwk", "kkkkkk"],
+        "thinking": ["..kkk.", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+        "sleepy": ["......", "......", "......", "......", "kkkkkk", "......"],
+        "blink": ["......", "......", "......", "......", "kkkkkk", "......"]
         ]
     ]
     static let mouths: [String: [String]] = [
         "neutral": [],
-        "happy": ["k..k", ".kk."],
-        "sad": [".kk.", "k..k"],
-        "surprised": ["kk", "kk"],
-        "thinking": ["kk"],
+        "happy": ["k......k", ".k....k.", "..kkkk.."],
+        "sad": ["..kkkk..", ".k....k.", "k......k"],
+        "surprised": ["kkkk", "k..k", "k..k", "kkkk"],
+        "thinking": ["kkkkkk"],
         "sleepy": []
     ]
     static let props: [String: PropDef] = [
-        "surprised": PropDef(x: 13, y: 0, rows: ["k", "k", ".", "k"]),
-        "thinking": PropDef(x: 12, y: 0, rows: ["..k", ".k.", "k.."]),
-        "sleepy": PropDef(x: 12, y: 0, rows: ["kk.", ".k.", ".kk"])
+        "surprised": PropDef(x: 29, y: 0, rows: ["aa", "aa", "aa", "aa", "..", "..", "aa", "aa"]),
+        "thinking": PropDef(x: 25, y: 0, rows: ["....aa", "....aa", "..aa..", "..aa..", "aa....", "aa...."]),
+        "sleepy": PropDef(x: 25, y: 0, rows: ["aaaaaa", "....aa", "...aa.", "..aa..", "aa....", "aaaaaa"])
     ]
 }

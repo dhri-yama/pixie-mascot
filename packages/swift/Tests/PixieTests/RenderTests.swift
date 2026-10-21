@@ -18,17 +18,17 @@ private func pixels(_ image: CGImage) -> [UInt8] {
     @Test func cgImageIsCrispAndColored() throws {
         let s = try generate("bubbanbbebb")
         let image = try #require(cgImage(s.grid, colors: s.colors, scale: 8))
-        #expect(image.width == 128 && image.height == 128)
+        #expect(image.width == pixieSize * 8 && image.height == pixieSize * 8)
         let data = pixels(image)
         // Every 8x8 block is one flat color: pick a body pixel and check its neighbors.
         var opaque = 0
         for i in stride(from: 3, to: data.count, by: 4) where data[i] == 255 { opaque += 1 }
-        #expect(opaque > 2000)
+        #expect(opaque > 8000)
         #expect(data[3] == 0, "top-left corner is transparent")
         let (r, g, b) = parseHex(s.colors[1])
         let first = s.grid.firstIndex(of: 1)!
-        let px = (first % 16) * 8 + 3, py = (first / 16) * 8 + 3
-        let o = (py * 128 + px) * 4
+        let px = (first % pixieSize) * 8 + 3, py = (first / pixieSize) * 8 + 3
+        let o = (py * (pixieSize * 8) + px) * 4
         #expect(data[o] == r && data[o + 1] == g && data[o + 2] == b)
     }
 

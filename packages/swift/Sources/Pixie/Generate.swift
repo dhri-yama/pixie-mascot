@@ -2,6 +2,10 @@ import Foundation
 
 // Spec: spec/sprite.md. Text -> Sprite. Pure function of (text, version, palette preset).
 // The order of rng draws is part of the algorithm: it must match the TypeScript core exactly.
+//
+// Geometry (32x32 grid): the left half is columns 0...15 and is mirrored onto 16...31. The body sits on the
+// ground (its last row is 25), feet use rows 26...29, row 30 is outline. Rows 0...3 are kept free for parts
+// that stick up, the outline above them, and the idle bob.
 
 private struct PartRolls {
     var present: Int
@@ -52,16 +56,16 @@ private func placePart(_ g: inout [UInt8], _ part: PartDef, _ rolls: PartRolls, 
         guard i < rows.count, j < rows[i].count else { return 0 }
         return partValue[rows[i][j]] ?? 0
     }
-    let xl = 8 - half
+    let xl = pixieAxis + 1 - half
 
     if part.slot == "top" {
         let dx = part.dx[Int(rolls.dx) % part.dx.count]
-        let ax = 7 - dx
+        let ax = pixieAxis - dx
         if ax < xl || topOf(g, ax) < 0 { return }
         let yb = topOf(g, ax) - 1
         for i in 0..<h {
             let y = yb - (h - 1) + i
-            if y < 2 { continue }
+            if y < pixieTop { continue }
             for j in 0..<w {
                 let x = ax - (w - 1) + j
                 let v = cell(i, j)
@@ -72,16 +76,16 @@ private func placePart(_ g: inout [UInt8], _ part: PartDef, _ rolls: PartRolls, 
         for j in 0..<w {
             let x = ax - (w - 1) + j
             var lowest = -1
-            for i in 0..<h where cell(i, j) != 0 && yb - (h - 1) + i >= 2 { lowest = yb - (h - 1) + i }
+            for i in 0..<h where cell(i, j) != 0 && yb - (h - 1) + i >= pixieTop { lowest = yb - (h - 1) + i }
             if lowest < 0 || x < 1 { continue }
             var y = lowest + 1, n = 0
-            while y < pixieSize && n < 4 && at(g, x, y) == 0 {
+            while y < pixieSize && n < 8 && at(g, x, y) == 0 {
                 put(&g, x, y, Cell.body)
                 y += 1; n += 1
             }
         }
     } else if part.slot == "side" {
-        let ys = y0 + 2 + Int(rolls.row) % max(1, bh - 3)
+        let ys = y0 + 4 + Int(rolls.row) % max(1, bh - 8)
         let lx = leftOf(g, ys)
         if lx < 0 { return }
         let xr = lx - 1
@@ -95,20 +99,20 @@ private func placePart(_ g: inout [UInt8], _ part: PartDef, _ rolls: PartRolls, 
             var rightmost = -1
             for j in 0..<w where cell(i, j) != 0 { rightmost = xr - (w - 1) + j }
             var x = rightmost + 1, n = 0
-            while rightmost >= 0 && x <= 7 && n < 3 && at(g, x, ys + i) == 0 {
+            while rightmost >= 0 && x <= pixieAxis && n < 6 && at(g, x, ys + i) == 0 {
                 put(&g, x, ys + i, Cell.body)
                 x += 1; n += 1
             }
         }
     } else {
         let dx = part.dx[Int(rolls.dx) % part.dx.count]
-        let ax = 7 - dx
+        let ax = pixieAxis - dx
         if ax < xl { return }
         let yb = bottomOf(g, ax)
         if yb < 0 { return }
         for i in 0..<h {
             let y = yb + 1 + i
-            if y > 14 { continue }
+            if y > pixieGround + 4 { continue }
             for j in 0..<w {
                 let x = ax - (w - 1) + j
                 let v = cell(i, j)
@@ -119,10 +123,10 @@ private func placePart(_ g: inout [UInt8], _ part: PartDef, _ rolls: PartRolls, 
         for j in 0..<w {
             let x = ax - (w - 1) + j
             var top = -1
-            for i in stride(from: h - 1, through: 0, by: -1) where cell(i, j) != 0 && yb + 1 + i <= 14 { top = yb + 1 + i }
+            for i in stride(from: h - 1, through: 0, by: -1) where cell(i, j) != 0 && yb + 1 + i <= pixieGround + 4 { top = yb + 1 + i }
             if top < 0 || x < 1 { continue }
             var y = top - 1, n = 0
-            while y >= 0 && n < 3 && at(g, x, y) == 0 {
+            while y >= 0 && n < 6 && at(g, x, y) == 0 {
                 put(&g, x, y, Cell.body)
                 y -= 1; n += 1
             }
@@ -138,13 +142,14 @@ private func pickPart(_ slot: String, _ wantSoft: Bool, _ rolls: PartRolls, _ ch
     return pool[Int(rolls.part) % pool.count]
 }
 
-/// Widest eye spacing (at most `pref`, at least 1) whose left eye sits fully on the body.
+/// Widest eye spacing (at most `pref`, at least 1) whose left eye sits fully on the body, moving the eyes
+/// down up to four rows when the body is too narrow. The eye box is 6x6; a "dot" eye needs its lower-right 4x4.
 private func fitEyes(_ fill: [UInt8], _ style: EyeStyle, _ eyeY0: Int, _ pref: Int) -> (eyeY: Int, eyeInner: Int) {
-    let offsets = style == .big ? [0, 1, 2] : [1, 2]
+    let offsets = style == .big ? [0, 1, 2, 3, 4, 5] : [2, 3, 4, 5]
     for margin in [1, 0] {
-        for dy in 0...2 {
+        for dy in 0...4 {
             for ei in stride(from: pref, through: 1, by: -1) {
-                let lx = 7 - ei - 2
+                let lx = pixieAxis - ei - 5
                 var ok = true
                 for r in offsets {
                     for c in offsets where at(fill, lx + c, eyeY0 + dy + r) == 0 { ok = false }
@@ -172,17 +177,16 @@ public func generate(_ text: String, version: Int = pixieVersion, palette: Prese
 
     // Body shape.
     let eff = clamp(roundness + (rng.int(15) - 7))
-    let heightRoll = rng.int(2)
-    let chamferRoll = rng.int(2)
-    let wedgeRoll = rng.int(2)
+    let heightRoll = rng.int(3)
+    let chamferRoll = rng.int(3)
+    let wedgeRoll = rng.int(3)
     let template: Template = eff >= 68 ? .blob : eff >= 45 ? .box : eff >= 25 ? .wedge : .gem
-    let sizeIdx = heft < 34 ? 0 : heft < 67 ? 1 : 2
-    let half = 4 + sizeIdx
-    let bh = [9, 8, 7][sizeIdx] - heightRoll
-    let y0 = 13 - bh
-    let xl = 8 - half
-    let k = 1 + chamferRoll
-    let halfTop = min(half, 1 + wedgeRoll)
+    let half = 8 + heft * 5 / 100 // 8...13 columns on the left side: 16...26 wide
+    let bh = 17 - heft * 5 / 100 - heightRoll // 10...17 rows tall
+    let y0 = pixieGround - bh + 1
+    let xl = pixieAxis + 1 - half
+    let k = 2 + chamferRoll // chamfer size of the box
+    let halfTop = min(half, 3 + wedgeRoll) // half width at the top of the wedge
 
     var g = [UInt8](repeating: 0, count: pixieSize * pixieSize)
     for r in 0..<bh {
@@ -210,7 +214,7 @@ public func generate(_ text: String, version: Int = pixieVersion, palette: Prese
 
     // Mirror left half onto the right half.
     for y in 0..<pixieSize {
-        for x in 0..<8 { put(&g, 15 - x, y, UInt8(at(g, x, y))) }
+        for x in 0...pixieAxis { put(&g, pixieSize - 1 - x, y, UInt8(at(g, x, y))) }
     }
 
     // Chaos breaks symmetry.
@@ -220,8 +224,8 @@ public func generate(_ text: String, version: Int = pixieVersion, palette: Prese
         let pickRoll = Int(rng.next())
         var cands: [Int] = []
         let chip = typeRoll % 2 == 0
-        for y in 2..<15 {
-            for x in 8..<16 {
+        for y in pixieTop..<(pixieGround + 5) {
+            for x in (pixieAxis + 1)..<pixieSize {
                 let v = at(g, x, y)
                 if chip {
                     let edge = at(g, x - 1, y) == 0 || at(g, x + 1, y) == 0 || at(g, x, y - 1) == 0 || at(g, x, y + 1) == 0
@@ -237,18 +241,23 @@ public func generate(_ text: String, version: Int = pixieVersion, palette: Prese
         }
     }
 
-    // Shade bottoms, one highlight pixel, then outline. Each pass reads a snapshot.
+    // Shade the bottom two rows of every downward-facing edge, add a three-pixel shine, then outline.
+    // Each pass reads a snapshot.
     let snap1 = g
     for y in 0..<pixieSize {
-        for x in 0..<pixieSize where at(snap1, x, y) == Int(Cell.body) && at(snap1, x, y + 1) == 0 {
+        for x in 0..<pixieSize where at(snap1, x, y) == Int(Cell.body) && (at(snap1, x, y + 1) == 0 || at(snap1, x, y + 2) == 0) {
             put(&g, x, y, Cell.shade)
         }
     }
+    let body = Int(Cell.body)
     scan: for y in 0..<pixieSize {
         for x in 0..<pixieSize {
-            if at(g, x, y) == Int(Cell.body) && at(g, x + 1, y) == Int(Cell.body)
-                && at(g, x, y + 1) == Int(Cell.body) && at(g, x - 1, y) != 0 {
+            if at(g, x, y) == body && at(g, x + 1, y) == body && at(g, x + 2, y) == body
+                && at(g, x, y + 1) == body && at(g, x + 1, y + 1) == body && at(g, x, y + 2) == body
+                && at(g, x - 1, y) != 0 {
                 put(&g, x, y, Cell.light)
+                put(&g, x + 1, y, Cell.light)
+                put(&g, x, y + 1, Cell.light)
                 break scan
             }
         }
@@ -264,11 +273,15 @@ public func generate(_ text: String, version: Int = pixieVersion, palette: Prese
     }
 
     // Face anchors.
-    let eyeInnerRoll = rng.int(2)
+    let eyeInnerRoll = rng.int(3)
     let eyeStyleRoll = rng.int(40)
     let eyeStyle: EyeStyle = clamp(roundness + eyeStyleRoll - 20) >= 50 ? .big : .dot
-    let fit = fitEyes(snap2, eyeStyle, y0 + bh * 30 / 100 + (template == .gem ? 1 : 0), 1 + eyeInnerRoll + (half == 6 ? 1 : 0))
-    let anchors = Anchors(eyeY: fit.eyeY, eyeInner: fit.eyeInner, mouthY: min(fit.eyeY + 4, y0 + bh - 2))
+    let fit = fitEyes(
+        snap2, eyeStyle,
+        y0 + bh * 30 / 100 + (template == .gem ? 2 : 0),
+        2 + eyeInnerRoll + (half >= 11 ? 2 : 0)
+    )
+    let anchors = Anchors(eyeY: fit.eyeY, eyeInner: fit.eyeInner, mouthY: min(fit.eyeY + 8, y0 + bh - 4))
 
     // Colors.
     let entryRoll = Int(rng.next())

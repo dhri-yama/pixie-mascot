@@ -13,8 +13,8 @@ public func compose(_ sprite: Sprite, _ pose: Pose = Pose()) -> [UInt8] {
 
     // Eyes: the right eye mirrors the left; gaze moves both the same way.
     let pattern = SpecData.eyes[sprite.eyeStyle.rawValue]?[pose.blink ? "blink" : mood.rawValue] ?? []
-    let lx = 7 - eyeInner - 2
-    let rx = 8 + eyeInner
+    let lx = pixieAxis - eyeInner - 5
+    let rx = pixieAxis + 1 + eyeInner
     for pupilPass in [false, true] {
         for (i, rowString) in pattern.enumerated() {
             let row = Array(rowString)
@@ -22,8 +22,8 @@ public func compose(_ sprite: Sprite, _ pose: Pose = Pose()) -> [UInt8] {
                 if ch == "." { continue }
                 let isPupil = ch == "p"
                 if pupilPass != isPupil { continue }
-                let ox = isPupil ? gx : 0
-                let oy = isPupil ? gy : 0
+                let ox = isPupil ? gx * 2 : 0
+                let oy = isPupil ? gy * 2 : 0
                 let y = eyeY + i + oy
                 for x in [lx + j + ox, rx + (row.count - 1 - j) + ox] {
                     if at(g, x, y) != 0 { put(&g, x, y, colorOf[ch] ?? Cell.ink) }
@@ -36,16 +36,16 @@ public func compose(_ sprite: Sprite, _ pose: Pose = Pose()) -> [UInt8] {
     let mouth = SpecData.mouths[mood.rawValue] ?? []
     for (i, rowString) in mouth.enumerated() {
         let row = Array(rowString)
-        let x0 = 8 - row.count / 2
+        let x0 = pixieAxis + 1 - row.count / 2
         for (j, ch) in row.enumerated() where ch != "." {
             if at(g, x0 + j, mouthY + i) != 0 { put(&g, x0 + j, mouthY + i, colorOf[ch] ?? Cell.ink) }
         }
     }
 
-    // Bob: shift everything up one pixel. Row 0 is always empty, so nothing is lost.
+    // Bob: shift everything up pixieBob rows. The top rows are always empty, so nothing is lost.
     if pose.bob {
-        g.replaceSubrange(0..<(pixieSize * (pixieSize - 1)), with: g[pixieSize...])
-        for x in 0..<pixieSize { g[pixieSize * (pixieSize - 1) + x] = 0 }
+        g.replaceSubrange(0..<(pixieSize * (pixieSize - pixieBob)), with: g[(pixieSize * pixieBob)...])
+        for i in (pixieSize * (pixieSize - pixieBob))..<(pixieSize * pixieSize) { g[i] = 0 }
     }
 
     // Props float in the top-right corner in the accent color.

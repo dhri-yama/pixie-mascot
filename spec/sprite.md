@@ -23,3 +23,11 @@ out = (t ^ (t >>> 14)) >>> 0
 ```
 `int(n) = next() % n`. `chance(p) = next() % 100 < p`. Seed 1 gives `2693262067, 11749833, 2265367787`.
 The order of rng calls in the generator is part of the algorithm.
+
+## Grid and geometry (v1)
+The grid is 32x32 (`SIZE`). The left half is columns 0..15 (`AXIS` = 15 is its last column) and is mirrored
+onto 16..31. The body's last row is 25 (`GROUND`); bottom parts use rows 26..29; rows 0..3 are reserved
+(`TOP` = 4 is the first row a part may use; the outline sits above it and the idle bob lifts the mascot `BOB` = 2 rows).
+Body: `half = 8 + heft*5/100` columns, `bh = 17 - heft*5/100 - heightRoll` rows (heightRoll 0..2).
+Faces use a 6x6 eye box per eye, mouths and props in `spec/faces/faces.json`; a gaze step moves a pupil 2 pixels.
+Shade covers the bottom two rows of every downward-facing edge; the shine is three pixels; the outline is one pixel.

@@ -11,9 +11,10 @@ and rng call order must not change. Any such change is a new version with its ow
 
 ## v1 measurements (2026-10-22, `pnpm variety`)
 
-100,000 distinct random strings of 4-12 letters: 99,471 unique sprites (99.47%), 529 distinct inputs
-shared a sprite with another input. Counting silhouettes and faces only (ignoring color): 96,721 unique.
-Accepted for 16x16. Revisit (24x24 or more parts) if a use case needs fewer collisions.
+Grid is 32x32. 100,000 distinct random strings of 4-12 letters: 99,965 unique sprites (99.97%), 35 distinct
+inputs shared a sprite with another input. Counting silhouettes and faces only (ignoring color): 99,782 unique.
+(The first draft used a 16x16 grid: 99.47% unique, 529 collisions. It looked too pixelated, so the grid was
+doubled and every part, face and prop was redrawn in finer detail.)
 
 ## Golden file
 

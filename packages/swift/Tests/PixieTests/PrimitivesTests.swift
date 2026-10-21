@@ -26,9 +26,9 @@ import Testing
         let a = try generate("bubbanbbebb")
         let b = try generate("  Bubbanbbebb ")
         #expect(a.grid == b.grid)
-        #expect(a.grid.count == 256)
+        #expect(a.grid.count == pixieSize * pixieSize)
         #expect(a.grid.allSatisfy { $0 <= 7 })
-        #expect(Array(a.body[0..<16]) == [UInt8](repeating: 0, count: 16))
+        #expect(Array(a.body[0..<(pixieSize * pixieBob)]) == [UInt8](repeating: 0, count: pixieSize * pixieBob))
         #expect(a.traits.roundness > 80)
         #expect(try generate("jsakkkwaakiyy").traits.roundness < 40)
         #expect(throws: GenerateError.self) { try generate("x", version: 99) }
@@ -44,8 +44,8 @@ import Testing
                 if let u = Unicode.Scalar(UInt32.random(in: 0..<0x2FFFF, using: &rng)) { s.unicodeScalars.append(u) }
             }
             let sprite = try generate(s)
-            #expect(sprite.grid.count == 256)
-            for mood in Mood.allCases { #expect(compose(sprite, Pose(mood: mood, blink: true, bob: true)).count == 256) }
+            #expect(sprite.grid.count == pixieSize * pixieSize)
+            for mood in Mood.allCases { #expect(compose(sprite, Pose(mood: mood, blink: true, bob: true)).count == pixieSize * pixieSize) }
         }
     }
 }

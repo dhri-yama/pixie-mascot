@@ -19,16 +19,16 @@ public fun compose(sprite: Sprite, pose: Pose = Pose()): IntArray {
 
     // Eyes: the right eye mirrors the left; gaze moves both the same way.
     val pattern = SpecData.eyes[sprite.eyeStyle.key]?.get(if (pose.blink) "blink" else mood.key) ?: emptyList()
-    val lx = 7 - eyeInner - 2
-    val rx = 8 + eyeInner
+    val lx = AXIS - eyeInner - 5
+    val rx = AXIS + 1 + eyeInner
     for (pupilPass in listOf(false, true)) {
         for ((i, row) in pattern.withIndex()) {
             for ((j, ch) in row.withIndex()) {
                 if (ch == '.') continue
                 val isPupil = ch == 'p'
                 if (pupilPass != isPupil) continue
-                val ox = if (isPupil) gx else 0
-                val oy = if (isPupil) gy else 0
+                val ox = if (isPupil) gx * 2 else 0
+                val oy = if (isPupil) gy * 2 else 0
                 val y = eyeY + i + oy
                 for (x in listOf(lx + j + ox, rx + (row.length - 1 - j) + ox)) {
                     if (at(g, x, y) != 0) put(g, x, y, colorOf(ch))
@@ -40,16 +40,16 @@ public fun compose(sprite: Sprite, pose: Pose = Pose()): IntArray {
     // Mouth, centered.
     val mouth = SpecData.mouths[mood.key] ?: emptyList()
     for ((i, row) in mouth.withIndex()) {
-        val x0 = 8 - row.length / 2
+        val x0 = AXIS + 1 - row.length / 2
         for ((j, ch) in row.withIndex()) {
             if (ch != '.' && at(g, x0 + j, mouthY + i) != 0) put(g, x0 + j, mouthY + i, colorOf(ch))
         }
     }
 
-    // Bob: shift everything up one pixel. Row 0 is always empty, so nothing is lost.
+    // Bob: shift everything up BOB rows. The top rows are always empty, so nothing is lost.
     if (pose.bob) {
-        System.arraycopy(g, SIZE, g, 0, SIZE * (SIZE - 1))
-        for (x in 0 until SIZE) g[SIZE * (SIZE - 1) + x] = 0
+        System.arraycopy(g, SIZE * BOB, g, 0, SIZE * (SIZE - BOB))
+        for (i in SIZE * (SIZE - BOB) until SIZE * SIZE) g[i] = 0
     }
 
     // Props float in the top-right corner in the accent color.

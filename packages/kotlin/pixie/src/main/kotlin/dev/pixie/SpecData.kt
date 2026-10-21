@@ -41,26 +41,26 @@ internal object SpecData {
     )
 
     val parts: List<PartDef> = listOf(
-        PartDef("ears", "top", "soft", listOf(2, 3), listOf("##", "##")),
-        PartDef("bud", "top", "soft", listOf(0), listOf("a", "#")),
-        PartDef("bumps", "top", "soft", listOf(1, 2, 3), listOf("#")),
-        PartDef("leaf", "top", "soft", listOf(1, 2), listOf("#.", "##")),
-        PartDef("horns", "top", "sharp", listOf(1, 2, 3), listOf("#.", "#.", "##")),
-        PartDef("spike", "top", "sharp", listOf(0, 1, 2), listOf("#", "#", "#")),
-        PartDef("crest", "top", "sharp", listOf(1, 2, 3), listOf("#", "#")),
-        PartDef("fang", "top", "sharp", listOf(2, 3), listOf(".#", "#.", "##")),
-        PartDef("nubs", "side", "soft", listOf(), listOf("#")),
-        PartDef("arms", "side", "soft", listOf(), listOf("##")),
-        PartDef("paws", "side", "soft", listOf(), listOf("##", "##")),
-        PartDef("spines", "side", "sharp", listOf(), listOf("#.", "##")),
-        PartDef("fins", "side", "sharp", listOf(), listOf(".#", "##", "#.")),
-        PartDef("blades", "side", "sharp", listOf(), listOf("#", "#")),
-        PartDef("feet", "bottom", "soft", listOf(1, 2, 3), listOf("##")),
-        PartDef("stubs", "bottom", "soft", listOf(1, 2, 3), listOf("#", "#")),
-        PartDef("paddles", "bottom", "soft", listOf(2, 3), listOf("##", "##")),
-        PartDef("claws", "bottom", "sharp", listOf(1, 2, 3), listOf("#.", "##")),
-        PartDef("legs", "bottom", "sharp", listOf(1, 2, 3), listOf("#", "#")),
-        PartDef("stilts", "bottom", "sharp", listOf(2, 3), listOf("#", "#", "#"))
+        PartDef("ears", "top", "soft", listOf(4, 6), listOf(".##.", "####", "####", "####")),
+        PartDef("bud", "top", "soft", listOf(0), listOf("aa", "aa", ".#", ".#")),
+        PartDef("bumps", "top", "soft", listOf(2, 4, 6), listOf("##", "##")),
+        PartDef("leaf", "top", "soft", listOf(3, 5), listOf("#.", "##", "##")),
+        PartDef("horns", "top", "sharp", listOf(3, 5, 7), listOf("#..", "#..", "##.", "##.", "###", "###")),
+        PartDef("spike", "top", "sharp", listOf(0, 2, 4), listOf(".#", ".#", ".#", "##", "##", "##")),
+        PartDef("crest", "top", "sharp", listOf(2, 4, 6), listOf("#.", "#.", "##", "##")),
+        PartDef("fang", "top", "sharp", listOf(4, 6), listOf("..#", ".##", "###", "###")),
+        PartDef("nubs", "side", "soft", listOf(), listOf("##", "##")),
+        PartDef("arms", "side", "soft", listOf(), listOf("####", "####")),
+        PartDef("paws", "side", "soft", listOf(), listOf("###", "###", "###")),
+        PartDef("spines", "side", "sharp", listOf(), listOf("#..", "##.", "###")),
+        PartDef("fins", "side", "sharp", listOf(), listOf(".##", "###", "##.")),
+        PartDef("blades", "side", "sharp", listOf(), listOf("#", "#", "#", "#")),
+        PartDef("feet", "bottom", "soft", listOf(3, 5, 7), listOf("####", "####")),
+        PartDef("stubs", "bottom", "soft", listOf(3, 5, 7), listOf("##", "##", "##", "##")),
+        PartDef("paddles", "bottom", "soft", listOf(4, 6), listOf("####", "####", "####")),
+        PartDef("claws", "bottom", "sharp", listOf(3, 5, 7), listOf("###", "##.", "#..")),
+        PartDef("legs", "bottom", "sharp", listOf(3, 5, 7), listOf("#", "#", "#", "#")),
+        PartDef("stilts", "bottom", "sharp", listOf(4, 6), listOf("#", "#", "#", "#", "#", "#"))
     )
 
     const val white = "#f6f6f2"
@@ -98,35 +98,35 @@ internal object SpecData {
     /** eyes[style][mood] is a 3x3 pattern for the left eye. */
     val eyes: Map<String, Map<String, List<String>>> = mapOf(
         "dot" to mapOf(
-            "neutral" to listOf("...", ".pp", ".pp"),
-            "happy" to listOf("...", ".k.", "k.k"),
-            "sad" to listOf("..k", ".pp", ".pp"),
-            "surprised" to listOf("kkk", "kwk", "kkk"),
-            "thinking" to listOf("pp.", "pp.", "..."),
-            "sleepy" to listOf("...", "...", "kkk"),
-            "blink" to listOf("...", "...", "kkk")
+            "neutral" to listOf("......", "......", "..ppp.", "..ppp.", "..ppp.", "......"),
+            "happy" to listOf("......", "..kk..", ".k..k.", "k....k", "......", "......"),
+            "sad" to listOf("....kk", "..kk..", "..ppp.", "..ppp.", "..ppp.", "......"),
+            "surprised" to listOf("kkkkkk", "kwwwwk", "kwwwwk", "kwwwwk", "kwwwwk", "kkkkkk"),
+            "thinking" to listOf("..kkk.", "......", "ppp...", "ppp...", "ppp...", "......"),
+            "sleepy" to listOf("......", "......", "......", "......", "kkkkkk", "......"),
+            "blink" to listOf("......", "......", "......", "......", "kkkkkk", "......")
         ),
         "big" to mapOf(
-            "neutral" to listOf("www", "wpw", "www"),
-            "happy" to listOf("...", ".k.", "k.k"),
-            "sad" to listOf("..k", "wpw", "www"),
-            "surprised" to listOf("kkk", "kwk", "kkk"),
-            "thinking" to listOf("k..", "wpw", "www"),
-            "sleepy" to listOf("...", "...", "kkk"),
-            "blink" to listOf("...", "...", "kkk")
+            "neutral" to listOf(".wwww.", "wwwwww", "wwppww", "wwppww", "wwwwww", ".wwww."),
+            "happy" to listOf("......", "..kk..", ".k..k.", "k....k", "......", "......"),
+            "sad" to listOf("....kk", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."),
+            "surprised" to listOf("kkkkkk", "kwwwwk", "kwkkwk", "kwkkwk", "kwwwwk", "kkkkkk"),
+            "thinking" to listOf("..kkk.", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."),
+            "sleepy" to listOf("......", "......", "......", "......", "kkkkkk", "......"),
+            "blink" to listOf("......", "......", "......", "......", "kkkkkk", "......")
         )
     )
     val mouths: Map<String, List<String>> = mapOf(
         "neutral" to listOf(),
-        "happy" to listOf("k..k", ".kk."),
-        "sad" to listOf(".kk.", "k..k"),
-        "surprised" to listOf("kk", "kk"),
-        "thinking" to listOf("kk"),
+        "happy" to listOf("k......k", ".k....k.", "..kkkk.."),
+        "sad" to listOf("..kkkk..", ".k....k.", "k......k"),
+        "surprised" to listOf("kkkk", "k..k", "k..k", "kkkk"),
+        "thinking" to listOf("kkkkkk"),
         "sleepy" to listOf()
     )
     val props: Map<String, PropDef> = mapOf(
-        "surprised" to PropDef(13, 0, listOf("k", "k", ".", "k")),
-        "thinking" to PropDef(12, 0, listOf("..k", ".k.", "k..")),
-        "sleepy" to PropDef(12, 0, listOf("kk.", ".k.", ".kk"))
+        "surprised" to PropDef(29, 0, listOf("aa", "aa", "aa", "aa", "..", "..", "aa", "aa")),
+        "thinking" to PropDef(25, 0, listOf("....aa", "....aa", "..aa..", "..aa..", "aa....", "aa....")),
+        "sleepy" to PropDef(25, 0, listOf("aaaaaa", "....aa", "...aa.", "..aa..", "aa....", "aaaaaa"))
     )
 }

@@ -97,7 +97,7 @@ Only a few, on purpose. Users do not tune the look.
 1. Normalize the text and hash it (FNV-1a) into a seed for a small integer-only PRNG (mulberry32).
 2. Each letter carries a bit of roundness, sharpness, weight and rarity ([spec/letters.json](spec/letters.json)).
    The totals become four traits 0..100: **roundness, heft, energy, chaos** ([spec/traits.md](spec/traits.md)).
-3. The traits pick a 16x16 body (blob, box, wedge or gem), parts (ears or horns, arms or spines, feet or claws),
+3. The traits pick a 32x32 body (blob, box, wedge or gem), parts (ears or horns, arms or spines, feet or claws),
    eyes, and a palette from a curated pool. The left half is built and mirrored; chaos breaks the symmetry.
 4. A behavior state machine ([spec/behavior.md](spec/behavior.md)) adds blinking, bobbing, attention
    (follow, wander, focus, asleep) and moods. It is pure and seeded, so it is testable and portable.
@@ -147,7 +147,7 @@ Quality numbers for v1 are recorded in [spec/VERSIONS.md](spec/VERSIONS.md).
 
 - Algorithm v1 is a draft. Freeze it (and announce the version policy) before storing avatars long term.
 - Sound only, no meaning. English-style letters drive the traits; other scripts fall back to the hash.
-- 16x16 gives about 0.5% collisions among 100k distinct random strings.
+- 32x32 gives about 0.04% collisions among 100k distinct random strings (35 of them shared a look with another).
 - Swift: verified on macOS (golden, behavior, off-screen SwiftUI render). The iOS code paths compile only
   against macOS here; the iOS SDK was not available.
 - Kotlin: verified on desktop JVM with an off-screen Compose render. The Android target was not built (no Android SDK).

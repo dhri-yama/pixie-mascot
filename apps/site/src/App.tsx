@@ -29,7 +29,7 @@ function GalleryCard({ group, word }: { group: string; word: string }): ReactNod
       }}
       title={`Try "${word}"`}
     >
-      <Mascot text={word} size={88} animated={false} mood={hover ? "happy" : "neutral"} />
+      <Mascot text={word} size={96} animated={false} mood={hover ? "happy" : "neutral"} />
       <span className="gword">{word}</span>
       <span className="gtag">{group}</span>
     </button>
@@ -42,7 +42,7 @@ function Compare(): ReactNode {
     <div className="compare">
       {pair.map(({ w, s }) => (
         <div key={w} className="panel compare-card" data-mascot-ignore>
-          <Mascot text={w} size={168} />
+          <Mascot text={w} size={160} />
           <h3>{w}</h3>
           <p className="caption">{s.template === "blob" ? "Round" : s.template === "box" ? "Boxy" : s.template === "wedge" ? "Wedge" : "Crystal"} body, {s.eyeStyle === "big" ? "big eyes" : "tiny eyes"}</p>
           <Meter label="round" value={s.traits.roundness} />
@@ -192,7 +192,7 @@ export function App(): ReactNode {
           <ol className="steps">
             <li><b>Normalize</b><span>Trim, fold case, hash. Equivalent text gives the same seed.</span></li>
             <li><b>Listen</b><span>Letters become roundness, heft, energy and chaos.</span></li>
-            <li><b>Build</b><span>A 16x16 sprite: body, ears or horns, feet, face, palette.</span></li>
+            <li><b>Build</b><span>A 32x32 sprite: body, ears or horns, feet, face, palette.</span></li>
             <li><b>Live</b><span>Blinks, bobs, follows the cursor, reacts to your UI.</span></li>
           </ol>
         </Section>
@@ -213,7 +213,7 @@ export function App(): ReactNode {
       </main>
 
       <footer className="footer" data-mascot-ignore>
-        <Mascot text="pixie" size={40} animated={false} />
+        <Mascot text="pixie" size={32} animated={false} />
         <span>Pixie. MIT license. Made of squares.</span>
       </footer>
     </>

@@ -1,7 +1,7 @@
 // Spec: spec/sprite.md "Faces". Draws a mood onto the faceless body. Pure and integer-only.
 
 import facesData from "../../../spec/faces/faces.json";
-import { ACCENT, CLEAR, INK, SIZE, WHITE, type Grid, type Pose, type Sprite } from "./types";
+import { ACCENT, AXIS, BOB, CLEAR, INK, SIZE, WHITE, type Grid, type Pose, type Sprite } from "./types";
 
 type EyeSet = Record<string, string[]>;
 const EYES = facesData.eyes as unknown as Record<string, EyeSet>;
@@ -24,10 +24,10 @@ export function compose(sprite: Sprite, pose: Pose = {}): Grid {
   const g: Grid = sprite.body.slice();
   const { eyeY, eyeInner, mouthY } = sprite.anchors;
 
-  // Eyes: the right eye is the mirror image of the left; gaze moves both the same way.
+  // Eyes: the right eye is the mirror image of the left; gaze moves both pupils the same way, two pixels per step.
   const pattern = EYES[sprite.eyeStyle]?.[pose.blink ? "blink" : mood] ?? [];
-  const lx = 7 - eyeInner - 2;
-  const rx = 8 + eyeInner;
+  const lx = AXIS - eyeInner - 5;
+  const rx = AXIS + 1 + eyeInner;
   for (const pass of ["fixed", "pupil"] as const) {
     for (let i = 0; i < pattern.length; i++) {
       const row = pattern[i] ?? "";
@@ -36,8 +36,8 @@ export function compose(sprite: Sprite, pose: Pose = {}): Grid {
         if (ch === ".") continue;
         const isPupil = ch === "p";
         if ((pass === "pupil") !== isPupil) continue;
-        const ox = isPupil ? gx : 0;
-        const oy = isPupil ? gy : 0;
+        const ox = isPupil ? gx * 2 : 0;
+        const oy = isPupil ? gy * 2 : 0;
         const y = eyeY + i + oy;
         for (const x of [lx + j + ox, rx + (row.length - 1 - j) + ox]) {
           if (at(g, x, y) !== CLEAR) put(g, x, y, COLOR[ch] ?? INK);
@@ -50,17 +50,17 @@ export function compose(sprite: Sprite, pose: Pose = {}): Grid {
   const mouth = MOUTHS[mood] ?? [];
   for (let i = 0; i < mouth.length; i++) {
     const row = mouth[i] ?? "";
-    const x0 = 8 - row.length / 2;
+    const x0 = AXIS + 1 - row.length / 2;
     for (let j = 0; j < row.length; j++) {
       const ch = row[j] ?? ".";
       if (ch !== "." && at(g, x0 + j, mouthY + i) !== CLEAR) put(g, x0 + j, mouthY + i, COLOR[ch] ?? INK);
     }
   }
 
-  // Bob: shift everything up one pixel. Row 0 is always empty, so nothing is lost.
+  // Bob: shift everything up BOB rows. The top rows are always empty, so nothing is lost.
   if (pose.bob) {
-    g.copyWithin(0, SIZE, SIZE * SIZE);
-    g.fill(CLEAR, SIZE * (SIZE - 1));
+    g.copyWithin(0, SIZE * BOB, SIZE * SIZE);
+    g.fill(CLEAR, SIZE * (SIZE - BOB));
   }
 
   // Props float in the top-right corner in the accent color so they show on any background.

@@ -1,6 +1,14 @@
 import Foundation
 
-public let pixieSize = 16
+public let pixieSize = 32
+/// Last column of the left half. The mascot is mirrored around the line between pixieAxis and pixieAxis + 1.
+let pixieAxis = 15
+/// Last row of the body. Feet use the rows below it.
+let pixieGround = 25
+/// First row parts may use. Rows above it hold the outline and leave room for the idle bob.
+let pixieTop = 4
+/// Rows the idle bob lifts the mascot.
+let pixieBob = 2
 public let pixieVersion = 1
 
 /// Palette indices used in grids.
@@ -72,7 +80,7 @@ public struct Sprite: Sendable {
     public let template: Template
     public let eyeStyle: EyeStyle
     public let anchors: Anchors
-    /// 16x16 palette indices, row by row, without a face.
+    /// 32x32 palette indices, row by row, without a face.
     public let body: [UInt8]
     /// Body with the neutral face. This is what the golden file hashes.
     public internal(set) var grid: [UInt8]

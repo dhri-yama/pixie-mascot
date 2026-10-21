@@ -45,11 +45,12 @@ class RenderTest {
             File(dir, "compose-jsakkkwaakiyy.png").writeBytes(render("jsakkkwaakiyy", null))
         }
 
-        // The first body pixel of the sprite must have the sprite's body color, at 16x16 cell scale.
+        // The first body pixel of the sprite must have the sprite's body color, at the sprite grid scale.
         val sprite = generate("bubbanbbebb")
         val first = sprite.grid.indexOfFirst { it == 1 }
-        val px = (first % 16) * 16 + 8
-        val py = (first / 16) * 16 + 8
+        val cellPx = 256 / dev.pixie.SIZE
+        val px = (first % dev.pixie.SIZE) * cellPx + cellPx / 2
+        val py = (first / dev.pixie.SIZE) * cellPx + cellPx / 2
         val rgb = img.getRGB(px, py) and 0xffffff
         assertEquals(parseHex(sprite.colors[1]), rgb, "body color at cell $first")
 

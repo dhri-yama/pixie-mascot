@@ -1,39 +1,39 @@
 {
-  "_doc": "Eye patterns are for the LEFT eye in a 3x3 box whose last column is the inner column (next to the center axis); the right eye is the mirror image. Chars: k ink, w white, p pupil (ink, moves with gaze), a accent, '.' clear. Mouths are centered, even width. Props are drawn at absolute x,y.",
+  "_doc": "32x32 grid. Eye patterns are for the LEFT eye in a 6x6 box whose last column is the inner column (next to the center axis); the right eye is the mirror image. Chars: k ink, w white, p pupil (ink, moves 2 pixels with gaze), a accent, '.' clear. Mouths are centered, even width. Props are drawn at absolute x,y in the accent color.",
   "eyes": {
     "dot": {
-      "neutral":   ["...", ".pp", ".pp"],
-      "happy":     ["...", ".k.", "k.k"],
-      "sad":       ["..k", ".pp", ".pp"],
-      "surprised": ["kkk", "kwk", "kkk"],
-      "thinking":  ["pp.", "pp.", "..."],
-      "sleepy":    ["...", "...", "kkk"],
-      "blink":     ["...", "...", "kkk"]
+      "neutral":   ["......", "......", "..ppp.", "..ppp.", "..ppp.", "......"],
+      "happy":     ["......", "..kk..", ".k..k.", "k....k", "......", "......"],
+      "sad":       ["....kk", "..kk..", "..ppp.", "..ppp.", "..ppp.", "......"],
+      "surprised": ["kkkkkk", "kwwwwk", "kwwwwk", "kwwwwk", "kwwwwk", "kkkkkk"],
+      "thinking":  ["..kkk.", "......", "ppp...", "ppp...", "ppp...", "......"],
+      "sleepy":    ["......", "......", "......", "......", "kkkkkk", "......"],
+      "blink":     ["......", "......", "......", "......", "kkkkkk", "......"]
     },
     "big": {
-      "neutral":   ["www", "wpw", "www"],
-      "happy":     ["...", ".k.", "k.k"],
-      "sad":       ["..k", "wpw", "www"],
-      "surprised": ["kkk", "kwk", "kkk"],
-      "thinking":  ["k..", "wpw", "www"],
-      "sleepy":    ["...", "...", "kkk"],
-      "blink":     ["...", "...", "kkk"]
+      "neutral":   [".wwww.", "wwwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+      "happy":     ["......", "..kk..", ".k..k.", "k....k", "......", "......"],
+      "sad":       ["....kk", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+      "surprised": ["kkkkkk", "kwwwwk", "kwkkwk", "kwkkwk", "kwwwwk", "kkkkkk"],
+      "thinking":  ["..kkk.", ".wwwww", "wwppww", "wwppww", "wwwwww", ".wwww."],
+      "sleepy":    ["......", "......", "......", "......", "kkkkkk", "......"],
+      "blink":     ["......", "......", "......", "......", "kkkkkk", "......"]
     }
   },
   "mouths": {
     "neutral":   [],
-    "happy":     ["k..k", ".kk."],
-    "sad":       [".kk.", "k..k"],
-    "surprised": ["kk", "kk"],
-    "thinking":  ["kk"],
+    "happy":     ["k......k", ".k....k.", "..kkkk.."],
+    "sad":       ["..kkkk..", ".k....k.", "k......k"],
+    "surprised": ["kkkk", "k..k", "k..k", "kkkk"],
+    "thinking":  ["kkkkkk"],
     "sleepy":    []
   },
   "props": {
     "neutral":   null,
     "happy":     null,
     "sad":       null,
-    "surprised": { "x": 13, "y": 0, "rows": ["k", "k", ".", "k"] },
-    "thinking":  { "x": 12, "y": 0, "rows": ["..k", ".k.", "k.."] },
-    "sleepy":    { "x": 12, "y": 0, "rows": ["kk.", ".k.", ".kk"] }
+    "surprised": { "x": 29, "y": 0, "rows": ["aa", "aa", "aa", "aa", "..", "..", "aa", "aa"] },
+    "thinking":  { "x": 25, "y": 0, "rows": ["....aa", "....aa", "..aa..", "..aa..", "aa....", "aa...."] },
+    "sleepy":    { "x": 25, "y": 0, "rows": ["aaaaaa", "....aa", "...aa.", "..aa..", "aa....", "aaaaaa"] }
   }
 }

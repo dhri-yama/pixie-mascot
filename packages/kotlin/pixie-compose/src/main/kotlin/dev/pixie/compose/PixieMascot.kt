@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.semantics
 import dev.pixie.AttentionMode
 import dev.pixie.Mood
 import dev.pixie.Preset
+import dev.pixie.SIZE
 import dev.pixie.compose
 import dev.pixie.parseHex
 import dev.pixie.runs
@@ -97,9 +98,9 @@ public fun PixieMascot(
             },
     ) {
         val grid = compose(sprite, state.pose)
-        val cell = minOf(size.width, size.height) / 16f
-        val ox = (size.width - cell * 16f) / 2f
-        val oy = (size.height - cell * 16f) / 2f
+        val cell = minOf(size.width, size.height) / SIZE
+        val ox = (size.width - cell * SIZE) / 2f
+        val oy = (size.height - cell * SIZE) / 2f
         for (run in runs(grid)) {
             val x0 = (ox + run.x * cell).roundToInt().toFloat()
             val x1 = (ox + (run.x + run.w) * cell).roundToInt().toFloat()

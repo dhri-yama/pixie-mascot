@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MOODS, compose, describe as describeSprite, generate, gridToString, toSVG } from "../src";
+import { BOB, MOODS, SIZE, compose, describe as describeSprite, generate, gridToString, toSVG } from "../src";
 import { createRng } from "../src/rng";
 
 const randomString = (rng: ReturnType<typeof createRng>): string => {
@@ -27,13 +27,13 @@ describe("generate", () => {
     expect(generate("  Bubba   Boo ").grid).toEqual(generate("bubba boo").grid);
   });
 
-  it("produces a 16x16 grid with valid palette indices and an empty top row", () => {
+  it("produces a 32x32 grid with valid palette indices and empty top rows for the bob", () => {
     for (const text of ["", " ", "a", "bubba", "jsakkkwaakiyy", "\u{1F600}", "The quick brown fox"]) {
       const s = generate(text);
-      expect(s.grid).toHaveLength(256);
-      expect(s.body).toHaveLength(256);
+      expect(s.grid).toHaveLength(SIZE * SIZE);
+      expect(s.body).toHaveLength(SIZE * SIZE);
       for (const v of s.grid) expect(v).toBeLessThanOrEqual(7);
-      for (let x = 0; x < 16; x++) expect(s.body[x]).toBe(0);
+      for (let i = 0; i < SIZE * BOB; i++) expect(s.body[i]).toBe(0);
       expect(s.colors).toHaveLength(8);
     }
   });
@@ -98,7 +98,7 @@ describe("compose", () => {
         for (const gx of [-1, 0, 1] as const) {
           for (const gy of [-1, 0, 1] as const) {
             const g = compose(sprite, { mood, blink, gaze: { x: gx, y: gy }, bob: gx === 1 });
-            expect(g).toHaveLength(256);
+            expect(g).toHaveLength(SIZE * SIZE);
             for (const v of g) expect(v).toBeLessThanOrEqual(7);
           }
         }
@@ -119,11 +119,11 @@ describe("compose", () => {
   it("gaze moves the pupils", () => {
     expect(compose(sprite, { gaze: { x: 1, y: 0 } })).not.toEqual(compose(sprite, {}));
   });
-  it("bob shifts everything up one row", () => {
+  it("bob shifts everything up by BOB rows", () => {
     const flat = compose(sprite, {});
     const bobbed = compose(sprite, { bob: true });
-    for (let y = 1; y < 16; y++) {
-      for (let x = 0; x < 16; x++) expect(bobbed[(y - 1) * 16 + x]).toBe(flat[y * 16 + x]);
+    for (let y = BOB; y < SIZE; y++) {
+      for (let x = 0; x < SIZE; x++) expect(bobbed[(y - BOB) * SIZE + x]).toBe(flat[y * SIZE + x]);
     }
   });
 });

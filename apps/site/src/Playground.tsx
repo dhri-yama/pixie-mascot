@@ -37,7 +37,7 @@ export function Playground(): ReactNode {
     <div className="playground panel" data-mascot-ignore>
       <div className="stage">
         <div className="stage-art">
-          <Mascot text={text} size={240} mood={mood} palette={palette || undefined} label={describe(sprite)} />
+          <Mascot text={text} size={256} mood={mood} palette={palette || undefined} label={describe(sprite)} />
         </div>
         <p className="caption">{describe(sprite)}</p>
         <div className="meters">

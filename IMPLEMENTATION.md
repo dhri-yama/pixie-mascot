@@ -10,7 +10,7 @@ Tick a box only when the thing works and its tests pass. One logical change per 
 | Species | One creature type. Text changes its body template, parts, face and colors. | Variety check (M4) shows too many look-alikes |
 | Body deformation | Faces swap per mood. Body only does 1px bob / squash. No limb animation. | After v1 ships |
 | Meaning-aware mode | Not in v1. Phonetics only. Core has no network and no lexicon. | v2 |
-| Grid | 16x16 | Collision rate too high |
+| Grid | 32x32 (changed from 16x16: it looked too pixelated) | A use case needs even finer art |
 | License | MIT | Before publish |
 | Package names | `@pixie/core`, `@pixie/react` (workspace names; registry availability unchecked) | Before publish |
 | Palette presets | `gameboy`, `mono`, `amber` | Later |
@@ -29,7 +29,7 @@ mirror left half -> right half, then chaos breaks symmetry with N mutations
 outline + shade + highlight passes
 face anchors (eye row, eye gap, mouth row) stored on the sprite
 palette = curated pool, group picked by traits, entry by rng
-Sprite { version, grid(16x16 palette idx), palette, traits, anchors, eyeStyle, seed }
+Sprite { version, grid(32x32 palette idx), palette, traits, anchors, eyeStyle, seed }
 ```
 
 Palette indices: 0 clear, 1 body, 2 outline, 3 shade, 4 light, 5 accent, 6 ink, 7 white.
@@ -58,7 +58,7 @@ The golden file hashes the **base grid with the neutral face**.
 
 ### M4 Golden + variety
 - [x] `spec/golden.json` (>= 500 inputs) + generator script + test
-- [x] Property tests: repeatable, never throws, no NaN, grid always 16x16, indices in range
+- [x] Property tests: repeatable, never throws, no NaN, grid always 32x32, indices in range
 - [x] Variety script: 100k random strings, unique-sprite rate printed. Record in `spec/VERSIONS.md`
 - [ ] Mark v1 frozen only after the owner reviews the art and accepts the variety numbers (still **draft**)
 
@@ -101,7 +101,7 @@ The golden file hashes the **base grid with the neutral face**.
 ## Known risks while building
 
 - Letter-sound mapping may look random. If the lab grid says so, stop and rework traits (M3 gate).
-- 16x16 may collide too often. Measure in M4 before freezing.
+- Collisions: measured at 0.04% on 32x32 (was 0.5% on 16x16).
 - Native ports may drift. The golden file is the only authority.
 
 ## Deviations from the plan, and what is still open
@@ -116,7 +116,15 @@ The golden file hashes the **base grid with the neutral face**.
 - Not verified: iOS compile, Android build, CI on real runners, publishing (`@pixie/*` names are unchecked).
 - Not built: meaning-aware mode, hosted SVG endpoint, extra moods (angry, love, ...), body squash/lean animation.
 
+## Grid change: 16x16 -> 32x32 (2026-10-22, after review)
+
+The owner found the 16x16 mascots too pixelated, so the grid became 32x32 (v1 is still a draft). Parts, faces,
+eyes (6x6 boxes, gaze moves 2 pixels), mouths and props were redrawn in finer detail; the body formulas, shading
+(two rows), shine (three pixels) and outline were adapted; the idle bob lifts 2 rows. All three languages were
+updated and re-verified against a regenerated `spec/golden.json`. A hardcoded 16 left in the Compose view was
+caught by its render test.
+
 ## Final verification (2026-10-22)
 
 TypeScript 73 tests, Swift 10 tests, Kotlin 10 tests; all three pass `spec/golden.json`.
-Variety: 99.47% unique sprites over 100,000 distinct random strings.
+Variety: 99.97% unique sprites over 100,000 distinct random strings (32x32 grid).

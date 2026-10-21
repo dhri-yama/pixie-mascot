@@ -1,6 +1,14 @@
 package dev.pixie
 
-public const val SIZE: Int = 16
+public const val SIZE: Int = 32
+/** Last column of the left half. The mascot is mirrored around the line between AXIS and AXIS + 1. */
+internal const val AXIS: Int = 15
+/** Last row of the body. Feet use the rows below it. */
+internal const val GROUND: Int = 25
+/** First row parts may use. Rows above it hold the outline and leave room for the idle bob. */
+internal const val TOP: Int = 4
+/** Rows the idle bob lifts the mascot. */
+internal const val BOB: Int = 2
 public const val VERSION: Int = 1
 
 /** Palette indices used in grids. */
@@ -58,7 +66,7 @@ public class Sprite internal constructor(
     public val template: Template,
     public val eyeStyle: EyeStyle,
     public val anchors: Anchors,
-    /** 16x16 palette indices, row by row, without a face. */
+    /** 32x32 palette indices, row by row, without a face. */
     public val body: IntArray,
     /** 8 CSS colors indexed by palette index; index 0 is "" (clear). */
     public val colors: List<String>,

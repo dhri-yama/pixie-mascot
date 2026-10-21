@@ -35,9 +35,9 @@ class PrimitivesTest {
         val a = generate("bubbanbbebb")
         val b = generate("  Bubbanbbebb ")
         assertContentEquals(a.grid, b.grid)
-        assertEquals(256, a.grid.size)
+        assertEquals(SIZE * SIZE, a.grid.size)
         assertTrue(a.grid.all { it in 0..7 })
-        assertTrue((0 until 16).all { a.body[it] == 0 })
+        assertTrue((0 until SIZE * BOB).all { a.body[it] == 0 })
         assertTrue(a.traits.roundness > 80)
         assertTrue(generate("jsakkkwaakiyy").traits.roundness < 40)
         assertFailsWith<IllegalArgumentException> { generate("x", version = 99) }
@@ -51,8 +51,8 @@ class PrimitivesTest {
             val sb = StringBuilder()
             repeat(rng.nextInt(40)) { sb.append(rng.nextInt(0xffff).toChar()) } // includes lone surrogates
             val sprite = generate(sb.toString())
-            assertEquals(256, sprite.grid.size)
-            for (m in Mood.entries) assertEquals(256, compose(sprite, Pose(m, blink = true, bob = true)).size)
+            assertEquals(SIZE * SIZE, sprite.grid.size)
+            for (m in Mood.entries) assertEquals(SIZE * SIZE, compose(sprite, Pose(m, blink = true, bob = true)).size)
         }
     }
 

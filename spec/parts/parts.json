@@ -1,27 +1,27 @@
 {
-  "_doc": "Left-half patterns. Rows top to bottom, leftmost column first; the LAST column is the anchor and sits 'dx' cells left of the center axis. '#' body, 'a' accent, 'd' shade, 'l' light, '.' clear. slot top: bottom row sits on the body surface at the anchor column. slot side: top row is placed on a body row, right column touching the body edge. slot bottom: top row sits under the body surface at the anchor column. tone: soft | sharp.",
+  "_doc": "Left-half patterns on a 32x32 grid. Rows top to bottom, leftmost column first; the LAST column is the anchor and sits 'dx' cells left of the center axis (column 15). '#' body, 'a' accent, 'd' shade, 'l' light, '.' clear. slot top: bottom row sits on the body surface at the anchor column. slot side: top row is placed on a body row, right column touching the body edge. slot bottom: top row sits under the body surface at the anchor column. tone: soft | sharp.",
   "parts": [
-    { "id": "ears",    "slot": "top",    "tone": "soft",  "dx": [2, 3], "rows": ["##", "##"] },
-    { "id": "bud",     "slot": "top",    "tone": "soft",  "dx": [0],    "rows": ["a", "#"] },
-    { "id": "bumps",   "slot": "top",    "tone": "soft",  "dx": [1, 2, 3], "rows": ["#"] },
-    { "id": "leaf",    "slot": "top",    "tone": "soft",  "dx": [1, 2], "rows": ["#.", "##"] },
-    { "id": "horns",   "slot": "top",    "tone": "sharp", "dx": [1, 2, 3], "rows": ["#.", "#.", "##"] },
-    { "id": "spike",   "slot": "top",    "tone": "sharp", "dx": [0, 1, 2], "rows": ["#", "#", "#"] },
-    { "id": "crest",   "slot": "top",    "tone": "sharp", "dx": [1, 2, 3], "rows": ["#", "#"] },
-    { "id": "fang",    "slot": "top",    "tone": "sharp", "dx": [2, 3], "rows": [".#", "#.", "##"] },
+    { "id": "ears",    "slot": "top",    "tone": "soft",  "dx": [4, 6],    "rows": [".##.", "####", "####", "####"] },
+    { "id": "bud",     "slot": "top",    "tone": "soft",  "dx": [0],       "rows": ["aa", "aa", ".#", ".#"] },
+    { "id": "bumps",   "slot": "top",    "tone": "soft",  "dx": [2, 4, 6], "rows": ["##", "##"] },
+    { "id": "leaf",    "slot": "top",    "tone": "soft",  "dx": [3, 5],    "rows": ["#.", "##", "##"] },
+    { "id": "horns",   "slot": "top",    "tone": "sharp", "dx": [3, 5, 7], "rows": ["#..", "#..", "##.", "##.", "###", "###"] },
+    { "id": "spike",   "slot": "top",    "tone": "sharp", "dx": [0, 2, 4], "rows": [".#", ".#", ".#", "##", "##", "##"] },
+    { "id": "crest",   "slot": "top",    "tone": "sharp", "dx": [2, 4, 6], "rows": ["#.", "#.", "##", "##"] },
+    { "id": "fang",    "slot": "top",    "tone": "sharp", "dx": [4, 6],    "rows": ["..#", ".##", "###", "###"] },
 
-    { "id": "nubs",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["#"] },
-    { "id": "arms",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["##"] },
-    { "id": "paws",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["##", "##"] },
-    { "id": "spines",  "slot": "side",   "tone": "sharp", "dx": [], "rows": ["#.", "##"] },
-    { "id": "fins",    "slot": "side",   "tone": "sharp", "dx": [], "rows": [".#", "##", "#."] },
-    { "id": "blades",  "slot": "side",   "tone": "sharp", "dx": [], "rows": ["#", "#"] },
+    { "id": "nubs",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["##", "##"] },
+    { "id": "arms",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["####", "####"] },
+    { "id": "paws",    "slot": "side",   "tone": "soft",  "dx": [], "rows": ["###", "###", "###"] },
+    { "id": "spines",  "slot": "side",   "tone": "sharp", "dx": [], "rows": ["#..", "##.", "###"] },
+    { "id": "fins",    "slot": "side",   "tone": "sharp", "dx": [], "rows": [".##", "###", "##."] },
+    { "id": "blades",  "slot": "side",   "tone": "sharp", "dx": [], "rows": ["#", "#", "#", "#"] },
 
-    { "id": "feet",    "slot": "bottom", "tone": "soft",  "dx": [1, 2, 3], "rows": ["##"] },
-    { "id": "stubs",   "slot": "bottom", "tone": "soft",  "dx": [1, 2, 3], "rows": ["#", "#"] },
-    { "id": "paddles", "slot": "bottom", "tone": "soft",  "dx": [2, 3], "rows": ["##", "##"] },
-    { "id": "claws",   "slot": "bottom", "tone": "sharp", "dx": [1, 2, 3], "rows": ["#.", "##"] },
-    { "id": "legs",    "slot": "bottom", "tone": "sharp", "dx": [1, 2, 3], "rows": ["#", "#"] },
-    { "id": "stilts",  "slot": "bottom", "tone": "sharp", "dx": [2, 3], "rows": ["#", "#", "#"] }
+    { "id": "feet",    "slot": "bottom", "tone": "soft",  "dx": [3, 5, 7], "rows": ["####", "####"] },
+    { "id": "stubs",   "slot": "bottom", "tone": "soft",  "dx": [3, 5, 7], "rows": ["##", "##", "##", "##"] },
+    { "id": "paddles", "slot": "bottom", "tone": "soft",  "dx": [4, 6],    "rows": ["####", "####", "####"] },
+    { "id": "claws",   "slot": "bottom", "tone": "sharp", "dx": [3, 5, 7], "rows": ["###", "##.", "#.."] },
+    { "id": "legs",    "slot": "bottom", "tone": "sharp", "dx": [3, 5, 7], "rows": ["#", "#", "#", "#"] },
+    { "id": "stilts",  "slot": "bottom", "tone": "sharp", "dx": [4, 6],    "rows": ["#", "#", "#", "#", "#", "#"] }
   ]
 }

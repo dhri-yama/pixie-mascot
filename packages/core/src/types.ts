@@ -1,6 +1,14 @@
 import type { Traits } from "./traits";
 
-export const SIZE = 16;
+export const SIZE = 32;
+/** Last column of the left half. The mascot is mirrored around the line between AXIS and AXIS + 1. */
+export const AXIS = 15;
+/** Last row of the body. Feet use the rows below it. */
+export const GROUND = 25;
+/** First row parts may use. Rows above it hold the outline and leave room for the idle bob. */
+export const TOP = 4;
+/** Rows the idle bob lifts the mascot. */
+export const BOB = 2;
 export const VERSION = 1;
 export type Grid = Uint8Array;
 export type Template = "blob" | "box" | "wedge" | "gem";
