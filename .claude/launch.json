@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "lab", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@pixie/lab", "dev"], "port": 5174 }
+    { "name": "lab", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@pixie/lab", "dev"], "port": 5174 },
+    { "name": "site", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@pixie/site", "dev"], "port": 5175 }
   ]
 }
