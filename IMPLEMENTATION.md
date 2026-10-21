@@ -124,6 +124,12 @@ eyes (6x6 boxes, gaze moves 2 pixels), mouths and props were redrawn in finer de
 updated and re-verified against a regenerated `spec/golden.json`. A hardcoded 16 left in the Compose view was
 caught by its render test.
 
+## Smooth rendering (2026-10-22, after review)
+
+The owner still found 32x32 a bit blocky, so a smooth renderer was added on top of the same grid for a side-by-side
+comparison (lab and site playground). Web only; not in the golden file; not ported to Swift/Kotlin. Waiting for the
+owner's verdict before porting or making it the default.
+
 ## Final verification (2026-10-22)
 
 TypeScript 73 tests, Swift 10 tests, Kotlin 10 tests; all three pass `spec/golden.json`.

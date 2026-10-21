@@ -29,6 +29,13 @@ not frozen. Not published to any registry. CI workflows exist but have never run
    preset, `version`. Do not add appearance options without asking.
 10. **Swift and Kotlin contain no logic that is not in the spec.** They are ports, proven only by `spec/golden.json`.
 
+## Smooth rendering (web only, experimental)
+
+`toSmoothSVG` and the `smooth` option redraw the same 32x32 grid as rounded vector shapes (trace each color
+region, round corners with Chaikin passes, shade clipped to the body). It is a renderer: it never touches the
+generator or the golden file, uses floating point, and is **not ported** to Swift/Kotlin. Do not let it leak into
+the generation path. If it is adopted, port it with its own tests rather than relaxing invariant 3.
+
 ## Layout
 
 - `spec/` is the source of truth. Rules in markdown; art as JSON (`letters.json`, `parts/parts.json`,

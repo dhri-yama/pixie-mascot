@@ -36,6 +36,15 @@ describe("mountMascot", () => {
     expect(svg.querySelectorAll("rect").length).toBeGreaterThan(10);
   });
 
+  it("smooth mode draws paths instead of rects, and can be switched on later", () => {
+    const m = mount({ text: "bubba", smooth: true, animated: false });
+    expect(host.querySelector("path")).not.toBeNull();
+    expect(host.querySelector("rect")).toBeNull();
+    m.update({ smooth: false });
+    expect(host.querySelector("rect")).not.toBeNull();
+    expect(host.querySelector("path")).toBeNull();
+  });
+
   it("static mode draws once and sets the app mood", () => {
     const m = mount({ text: "bubba", animated: false, mood: "happy" });
     const before = host.innerHTML;

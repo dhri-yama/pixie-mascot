@@ -1,4 +1,4 @@
-import { MOODS, compose, describe, generate, normalize, toSVG, type Mood, type PresetName } from "@pixie/core";
+import { MOODS, compose, describe, generate, normalize, toSVG, toSmoothSVG, type Mood, type PresetName } from "@pixie/core";
 
 const DEFAULT_WORDS = `
 bubbanbbebb, jsakkkwaakiyy, bubba, mumu, moon, noodle, bubble, loom, woolly, mellow, boom, mum
@@ -15,6 +15,8 @@ const moodEl = $<HTMLSelectElement>("mood");
 const paletteEl = $<HTMLSelectElement>("palette");
 const scaleEl = $<HTMLInputElement>("scale");
 const animateEl = $<HTMLInputElement>("animate");
+const styleEl = $<HTMLSelectElement>("style");
+const smoothnessEl = $<HTMLInputElement>("smoothness");
 const gridEl = $("grid");
 const statsEl = $("stats");
 
@@ -24,6 +26,12 @@ wordsEl.value = new URLSearchParams(location.hash.slice(1)).get("w") ?? DEFAULT_
 let frame = 0;
 const bar = (label: string, v: number): string =>
   `<span>${label}</span><i style="width:${v}%"></i>`;
+
+function art(grid: Uint8Array, colors: string[], px: number, label: string): string {
+  const pixel = toSVG(grid, colors, { size: px, label });
+  const smooth = toSmoothSVG(grid, colors, { size: px, label, smoothness: Number(smoothnessEl.value) });
+  return styleEl.value === "pixel" ? pixel : styleEl.value === "smooth" ? smooth : pixel + smooth;
+}
 
 function render(): void {
   const words = wordsEl.value.split(/[,\n]/).map((w) => w.trim()).filter((w, i, a) => w !== "" && a.indexOf(w) === i);
@@ -41,17 +49,18 @@ function render(): void {
     seen.set(key, (seen.get(key) ?? 0) + 1);
     const t = s.traits;
     return `<div class="card" title="${normalize(w)}">
-      ${toSVG(grid, s.colors, { size: px, label: describe(s) })}
+      <div class="pair">${art(grid, s.colors, px, describe(s))}</div>
       <div class="word">${w.replace(/</g, "&lt;")}${words.length === 1 ? ` · ${mood}` : ""}</div>
       <div class="tr">${s.template} · ${s.eyeStyle} · ${s.colorName}</div>
       <div class="bar">${bar("round", t.roundness)}${bar("heft", t.heft)}${bar("energy", t.energy)}${bar("chaos", t.chaos)}</div>
     </div>`;
   });
+  gridEl.style.setProperty("--cw", `${Math.max(150, (styleEl.value === "both" ? px * 2 + 12 : px) + 24)}px`);
   gridEl.innerHTML = cards.join("");
   statsEl.textContent = words.length === 1 ? "all moods" : `${words.length} words, ${seen.size} distinct sprites`;
 }
 
-for (const el of [wordsEl, moodEl, paletteEl, scaleEl, animateEl]) el.addEventListener("input", render);
+for (const el of [wordsEl, moodEl, paletteEl, scaleEl, animateEl, styleEl, smoothnessEl]) el.addEventListener("input", render);
 wordsEl.addEventListener("input", () => history.replaceState(null, "", `#w=${encodeURIComponent(wordsEl.value)}`));
 setInterval(() => {
   if (animateEl.checked) {

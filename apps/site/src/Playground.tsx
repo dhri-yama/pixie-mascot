@@ -1,11 +1,13 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { MOODS, compose, describe, generate, toSVG, type Mood, type PresetName } from "@pixie/core";
+import { MOODS, compose, describe, generate, toSVG, toSmoothSVG, type Mood, type PresetName } from "@pixie/core";
 import { Mascot } from "@pixie/react";
 import { PLATFORMS, snippet, type Platform } from "./snippets";
 import { CopyButton, Meter } from "./ui";
 
 const TRY = ["bubbanbbebb", "jsakkkwaakiyy", "sleepy cloud", "razor wire", "moon", "zzkt", "your name"];
 const PALETTES: Array<PresetName | ""> = ["", "gameboy", "mono", "amber"];
+type Look = "pixel" | "smooth" | "both";
+const LOOKS: Look[] = ["both", "pixel", "smooth"];
 
 const initialText = (): string => new URLSearchParams(location.search).get("t") ?? "bubbanbbebb";
 
@@ -14,6 +16,7 @@ export function Playground(): ReactNode {
   const [mood, setMood] = useState<Mood | null>(null);
   const [palette, setPalette] = useState<PresetName | "">("");
   const [platform, setPlatform] = useState<Platform>("react");
+  const [look, setLook] = useState<Look>("both");
 
   const sprite = useMemo(() => generate(text, { palette: palette || undefined }), [text, palette]);
 
@@ -24,7 +27,9 @@ export function Playground(): ReactNode {
     history.replaceState(null, "", url);
   };
   const download = (): void => {
-    const svg = toSVG(compose(sprite, { mood: mood ?? "neutral" }), sprite.colors, { size: 512, label: describe(sprite) });
+    const grid = compose(sprite, { mood: mood ?? "neutral" });
+    const opts = { size: 512, label: describe(sprite) };
+    const svg = look === "smooth" ? toSmoothSVG(grid, sprite.colors, opts) : toSVG(grid, sprite.colors, opts);
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
     a.download = `pixie-${sprite.text.replace(/[^a-z0-9]+/g, "-").slice(0, 24) || "mascot"}.svg`;
@@ -36,8 +41,19 @@ export function Playground(): ReactNode {
   return (
     <div className="playground panel" data-mascot-ignore>
       <div className="stage">
-        <div className="stage-art">
-          <Mascot text={text} size={256} mood={mood} palette={palette || undefined} label={describe(sprite)} />
+        <div className={`stage-art ${look === "both" ? "both" : ""}`}>
+          {look !== "smooth" && (
+            <figure>
+              <Mascot text={text} size={look === "both" ? 160 : 256} mood={mood} palette={palette || undefined} label={describe(sprite)} />
+              {look === "both" && <figcaption>pixel</figcaption>}
+            </figure>
+          )}
+          {look !== "pixel" && (
+            <figure>
+              <Mascot text={text} size={look === "both" ? 160 : 256} mood={mood} palette={palette || undefined} label={describe(sprite)} smooth />
+              {look === "both" && <figcaption>smooth</figcaption>}
+            </figure>
+          )}
         </div>
         <p className="caption">{describe(sprite)}</p>
         <div className="meters">
@@ -68,6 +84,16 @@ export function Playground(): ReactNode {
             {MOODS.map((m) => (
               <button key={m} type="button" className={`chip ${mood === m ? "on" : ""}`} onClick={() => setMood(m)}>
                 {m}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="row">
+          <span className="label">Style</span>
+          <div className="chips">
+            {LOOKS.map((l) => (
+              <button key={l} type="button" className={`chip ${look === l ? "on" : ""}`} onClick={() => setLook(l)}>
+                {l === "both" ? "side by side" : l}
               </button>
             ))}
           </div>

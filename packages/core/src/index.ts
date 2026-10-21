@@ -1,6 +1,6 @@
 export { generate, describe } from "./generate";
 export { compose } from "./compose";
-export { toSVG, runs, gridToString, type Run, type SvgOptions } from "./render";
+export { toSVG, toSmoothSVG, runs, gridToString, type Run, type SvgOptions, type SmoothOptions } from "./render";
 export { normalize } from "./normalize";
 export { hashText, fnv1a, utf8 } from "./hash";
 export { createRng, type Rng } from "./rng";

@@ -4,7 +4,7 @@
 import { createBehavior, type AttentionMode, type Behavior, type Vec } from "./behavior";
 import { compose } from "./compose";
 import { describe, generate } from "./generate";
-import { toSVG } from "./render";
+import { toSVG, toSmoothSVG } from "./render";
 import type { Mood, Pose, PresetName, Sprite } from "./types";
 import { MOODS } from "./types";
 
@@ -20,6 +20,8 @@ export interface MountOptions {
   animated?: boolean;
   /** React to hover, click, focus, typing and form events anywhere on the page. Default false. */
   auto?: boolean;
+  /** Draw rounded vector shapes instead of square pixels. Same sprite, softer look. Default false. */
+  smooth?: boolean;
   /** Frames per second. Default 10. */
   fps?: number;
   /** Accessible name. Default is generated from the sprite. "" makes it decorative. */
@@ -88,12 +90,15 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
   };
 
   function draw(pose: Pose, force = false): void {
-    const key = `${pose.mood}|${pose.gaze?.x}|${pose.gaze?.y}|${pose.blink}|${pose.bob}`;
+    const key = `${pose.mood}|${pose.gaze?.x}|${pose.gaze?.y}|${pose.blink}|${pose.bob}|${opts.smooth}`;
     if (key === lastKey && !force) return;
     lastKey = key;
     lastPose = pose;
     const label = opts.label ?? describe(sprite);
-    container.innerHTML = toSVG(compose(sprite, pose), sprite.colors, { size: opts.size, label });
+    const grid = compose(sprite, pose);
+    container.innerHTML = opts.smooth
+      ? toSmoothSVG(grid, sprite.colors, { size: opts.size, label })
+      : toSVG(grid, sprite.colors, { size: opts.size, label });
   }
 
   function build(): void {
@@ -266,7 +271,7 @@ export function definePixieElement(tag = "pixie-mascot"): CustomElementConstruct
   if (existing) return existing;
 
   class PixieElement extends HTMLElement {
-    static observedAttributes = ["text", "size", "palette", "mood", "attention", "animated", "auto", "label"];
+    static observedAttributes = ["text", "size", "palette", "mood", "attention", "animated", "auto", "label", "smooth"];
     private mascot?: MountedMascot;
 
     private read(): MountOptions {
@@ -280,6 +285,7 @@ export function definePixieElement(tag = "pixie-mascot"): CustomElementConstruct
         attention: (g("attention") as AttentionMode | null) ?? "sometimes",
         animated: g("animated") !== "false",
         auto: this.hasAttribute("auto") && g("auto") !== "false",
+        smooth: this.hasAttribute("smooth") && g("smooth") !== "false",
         label: g("label") ?? undefined,
       };
     }

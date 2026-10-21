@@ -88,6 +88,7 @@ Only a few, on purpose. Users do not tune the look.
 | `text` | Any string. It is normalized first (Unicode NFC, ASCII lowercase, whitespace collapsed, 128 code points) |
 | `mood` | Set by your app. Leave unset and the mascot decides |
 | `animated` | `false` gives one still frame |
+| `smooth` | Web only for now: draw rounded vector shapes instead of square pixels (`<Mascot smooth />`, `smooth` attribute, `toSmoothSVG`) |
 | `attention` | `always` / `sometimes` / `never` follow the pointer |
 | `palette` | `gameboy`, `mono`, `amber`, or the curated default |
 | `version` | Pin the algorithm (generator functions only) |
@@ -146,6 +147,7 @@ Quality numbers for v1 are recorded in [spec/VERSIONS.md](spec/VERSIONS.md).
 ## Known limits
 
 - Algorithm v1 is a draft. Freeze it (and announce the version policy) before storing avatars long term.
+- The `smooth` look exists only in the TypeScript/web package. It is a renderer on top of the same 32x32 grid, uses floating point, and is not part of the golden file. Swift and Kotlin draw square pixels until it is ported.
 - Sound only, no meaning. English-style letters drive the traits; other scripts fall back to the hash.
 - 32x32 gives about 0.04% collisions among 100k distinct random strings (35 of them shared a look with another).
 - Swift: verified on macOS (golden, behavior, off-screen SwiftUI render). The iOS code paths compile only

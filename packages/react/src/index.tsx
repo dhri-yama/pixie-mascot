@@ -2,7 +2,7 @@ import {
   forwardRef, useEffect, useImperativeHandle, useRef, useState,
   type CSSProperties,
 } from "react";
-import { compose, describe, generate, toSVG, type Mood, type Sprite } from "@pixie/core";
+import { compose, describe, generate, toSVG, toSmoothSVG, type Mood, type Sprite } from "@pixie/core";
 import { mountMascot, type MountedMascot, type MountOptions } from "@pixie/core/dom";
 
 export type { Mood, Sprite, PresetName, AttentionMode } from "@pixie/core";
@@ -26,7 +26,8 @@ export interface MascotHandle {
 function firstPaint(p: MascotProps): string {
   const sprite = generate(p.text, { palette: p.palette });
   const pose = { mood: p.mood ?? ("neutral" as const) };
-  return toSVG(compose(sprite, pose), sprite.colors, { size: p.size ?? 64, label: p.label ?? describe(sprite) });
+  const opts = { size: p.size ?? 64, label: p.label ?? describe(sprite) };
+  return p.smooth ? toSmoothSVG(compose(sprite, pose), sprite.colors, opts) : toSVG(compose(sprite, pose), sprite.colors, opts);
 }
 
 /**
@@ -53,15 +54,15 @@ export const Mascot = forwardRef<MascotHandle, MascotProps>(function Mascot(prop
     };
   }, []);
 
-  const { text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs } = options;
+  const { text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth } = options;
   const first = useRef(true);
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
-    mounted.current?.update({ text, size, palette, mood: mood ?? null, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs });
-  }, [text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs]);
+    mounted.current?.update({ text, size, palette, mood: mood ?? null, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth });
+  }, [text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth]);
 
   useImperativeHandle(ref, () => ({
     get sprite() {
