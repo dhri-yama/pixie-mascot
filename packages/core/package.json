@@ -8,12 +8,23 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./dom": { "types": "./dist/dom.d.ts", "import": "./dist/dom.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./dom": {
+      "types": "./dist/dom.d.ts",
+      "import": "./dist/dom.js"
+    },
+    "./browser": "./dist/pixie.global.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc -p tsconfig.json"
-  }
+  },
+  "unpkg": "./dist/pixie.global.js",
+  "jsdelivr": "./dist/pixie.global.js"
 }

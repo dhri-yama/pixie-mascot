@@ -34,6 +34,8 @@ export interface Behavior {
   setMood(mood: Mood | null): void;
   /** One-shot reaction that falls back to idle after `ms`. Wakes the mascot. */
   react(mood: Mood, ms?: number): void;
+  /** Drop a running reaction right away (e.g. the pointer left the button that caused it). */
+  clearReaction(): void;
   /** Where the cursor (or touch) is, relative to the mascot. null = unknown / left the window. */
   lookAt(target: Vec | null): void;
   /** Lock attention on something (a hovered button, the active input). Beats cursor following. */
@@ -135,6 +137,9 @@ export function createBehavior(options: BehaviorOptions): Behavior {
     react(m, ms = 900) {
       reaction = { mood: m, until: now + ms };
       touch();
+    },
+    clearReaction() {
+      reaction = null;
     },
     lookAt(v) {
       const moved = v !== null && (target === null || Math.abs(v.x - target.x) + Math.abs(v.y - target.y) > 0.05);
