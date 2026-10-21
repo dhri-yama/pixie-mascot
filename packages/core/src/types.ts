@@ -11,7 +11,10 @@ export const TOP = 4;
 export const BOB = 2;
 export const VERSION = 1;
 export type Grid = Uint8Array;
-export type Template = "blob" | "box" | "wedge" | "gem";
+export type Template =
+  | "blob" | "egg" | "pear" | "capsule" | "dome" | "cloud" | "twin" | "box"
+  | "star" | "gem" | "wedge" | "hex" | "kite";
+export type Mark = "none" | "belly" | "spots" | "stripes" | "cheeks" | "gem";
 export type EyeStyle = "dot" | "big";
 export type PresetName = "gameboy" | "mono" | "amber";
 
@@ -31,6 +34,8 @@ export interface Sprite {
   text: string;
   traits: Traits;
   template: Template;
+  /** Decoration on the body: a belly patch, spots, stripes, cheeks or a forehead gem. */
+  mark: Mark;
   eyeStyle: EyeStyle;
   anchors: Anchors;
   /** Body without a face. */

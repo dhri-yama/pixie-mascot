@@ -127,3 +127,62 @@ describe("compose", () => {
     }
   });
 });
+
+describe("variety", () => {
+  const rng = createRng(31337);
+  const samples = Array.from({ length: 1500 }, () => {
+    let text = "";
+    for (let j = 0, n = 4 + rng.int(9); j < n; j++) text += String.fromCharCode(97 + rng.int(26));
+    return generate(text);
+  });
+
+  it("uses every body shape and every mark", () => {
+    expect(new Set(samples.map((s) => s.template)).size).toBe(13);
+    expect(new Set(samples.map((s) => s.mark)).size).toBe(6);
+  });
+
+  it("gives round-sounding text soft shapes and sharp-sounding text pointy ones", () => {
+    const soft = new Set(["blob", "egg", "pear", "capsule", "dome", "cloud", "twin", "box"]);
+    for (const w of ["bubbanbbebb", "mumu", "moon", "noodle"]) expect(soft.has(generate(w).template), w).toBe(true);
+    for (const w of ["jsakkkwaakiyy", "zzkt", "kixtz", "quartz"]) expect(soft.has(generate(w).template), w).toBe(false);
+  });
+
+  it("varies proportions a lot: tall, wide and in between", () => {
+    const boxes = new Set<string>();
+    let tall = 0, wide = 0;
+    for (const s of samples) {
+      let x0 = SIZE, x1 = 0, y0 = SIZE, y1 = 0;
+      for (let i = 0; i < SIZE * SIZE; i++) {
+        if (s.body[i] === 0) continue;
+        const x = i % SIZE, y = Math.floor(i / SIZE);
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      }
+      boxes.add(`${x1 - x0}x${y1 - y0}`);
+      if (y1 - y0 > x1 - x0) tall++;
+      if (x1 - x0 > 1.6 * (y1 - y0)) wide++;
+    }
+    expect(boxes.size).toBeGreaterThan(60);
+    expect(tall).toBeGreaterThan(100);
+    expect(wide).toBeGreaterThan(100);
+  });
+
+  it("some mascots have a tail, so they are not mirror images", () => {
+    let asymmetric = 0;
+    for (const s of samples) {
+      for (let y = 0; y < SIZE && asymmetric >= 0; y++) {
+        let diff = false;
+        for (let x = 0; x < SIZE / 2; x++) if ((s.body[y * SIZE + x] === 0) !== (s.body[y * SIZE + SIZE - 1 - x] === 0)) diff = true;
+        if (diff) {
+          asymmetric++;
+          break;
+        }
+      }
+    }
+    expect(asymmetric).toBeGreaterThan(300);
+  });
+
+  it("almost never repeats a look", () => {
+    const seen = new Set(samples.map((s) => gridToString(s.grid) + s.colors.join()));
+    expect(seen.size).toBeGreaterThan(1495);
+  });
+});

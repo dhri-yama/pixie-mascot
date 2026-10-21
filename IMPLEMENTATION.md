@@ -124,6 +124,13 @@ eyes (6x6 boxes, gaze moves 2 pixels), mouths and props were redrawn in finer de
 updated and re-verified against a regenerated `spec/golden.json`. A hardcoded 16 left in the Compose view was
 caught by its render test.
 
+## Shape variety (2026-10-22, after review)
+
+The owner pointed out most mascots looked alike (a wide flat blob). Using a sheet of Pokemon-style creatures as
+inspiration for *silhouette archetypes* (not copying characters), the generator now has 13 body shapes with their own
+proportions, a bigger parts library (rabbit/cat/bear ears, wings, flippers, flame, sprout), one-sided tails and 6
+markings. TypeScript, Swift and Kotlin were all updated and pass the regenerated golden file.
+
 ## Smooth rendering (2026-10-22, after review)
 
 The owner still found 32x32 a bit blocky, so a smooth renderer was added on top of the same grid for a side-by-side

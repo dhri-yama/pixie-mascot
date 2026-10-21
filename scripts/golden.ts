@@ -50,6 +50,7 @@ export function entry(input: string) {
     seed: hex(s.seed),
     traits: [s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos],
     template: s.template,
+    mark: s.mark,
     eyeStyle: s.eyeStyle,
     anchors: [s.anchors.eyeY, s.anchors.eyeInner, s.anchors.mouthY],
     colors: s.colors.slice(1).join(","),

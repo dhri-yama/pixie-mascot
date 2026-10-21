@@ -8,7 +8,7 @@ export { computeTraits, type Traits } from "./traits";
 export {
   AXIS, BOB, GROUND, MOODS, SIZE, TOP, VERSION,
   type Anchors, type EyeStyle, type GenerateOptions, type Gaze, type Grid, type Mood,
-  type Pose, type PresetName, type Sprite, type Template,
+  type Mark, type Pose, type PresetName, type Sprite, type Template,
 } from "./types";
 export {
   createBehavior, snapGaze,

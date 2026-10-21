@@ -98,8 +98,10 @@ Only a few, on purpose. Users do not tune the look.
 1. Normalize the text and hash it (FNV-1a) into a seed for a small integer-only PRNG (mulberry32).
 2. Each letter carries a bit of roundness, sharpness, weight and rarity ([spec/letters.json](spec/letters.json)).
    The totals become four traits 0..100: **roundness, heft, energy, chaos** ([spec/traits.md](spec/traits.md)).
-3. The traits pick a 32x32 body (blob, box, wedge or gem), parts (ears or horns, arms or spines, feet or claws),
-   eyes, and a palette from a curated pool. The left half is built and mirrored; chaos breaks the symmetry.
+3. The traits pick one of 13 body shapes (soft: ball, egg, pear, capsule, dome, cloud, head-on-body, box; sharp: star,
+   crystal, wedge, hexagon, kite) with its own proportions, then parts (ears, horns, wings, arms, feet, claws), a tail
+   on one side, a marking (belly patch, spots, stripes, cheeks or a forehead gem), eyes, and a palette from a curated
+   pool. The left half is built and mirrored; chaos breaks the symmetry.
 4. A behavior state machine ([spec/behavior.md](spec/behavior.md)) adds blinking, bobbing, attention
    (follow, wander, focus, asleep) and moods. It is pure and seeded, so it is testable and portable.
 

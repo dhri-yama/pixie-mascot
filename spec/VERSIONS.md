@@ -11,10 +11,11 @@ and rng call order must not change. Any such change is a new version with its ow
 
 ## v1 measurements (2026-10-22, `pnpm variety`)
 
-Grid is 32x32. 100,000 distinct random strings of 4-12 letters: 99,965 unique sprites (99.97%), 35 distinct
-inputs shared a sprite with another input. Counting silhouettes and faces only (ignoring color): 99,782 unique.
-(The first draft used a 16x16 grid: 99.47% unique, 529 collisions. It looked too pixelated, so the grid was
-doubled and every part, face and prop was redrawn in finer detail.)
+Grid is 32x32, with 13 body shapes, 6 markings and one-sided tails. 100,000 distinct random strings of 4-12 letters:
+100,000 unique sprites (no collisions), 99,999 unique silhouettes-and-faces ignoring color.
+History: the first draft used 16x16 (99.47% unique, 529 collisions) and looked too pixelated; the grid was doubled
+and the art redrawn (99.97%, 35 collisions). Then most mascots still looked alike (a wide flat blob with ears), so
+body archetypes, proportions, tails and markings were added.
 
 ## Golden file
 

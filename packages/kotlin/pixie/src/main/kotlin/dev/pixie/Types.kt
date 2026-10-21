@@ -38,7 +38,15 @@ public enum class Mood(public val key: String) {
     }
 }
 
-public enum class Template(public val key: String) { Blob("blob"), Box("box"), Wedge("wedge"), Gem("gem") }
+public enum class Template(public val key: String) {
+    Blob("blob"), Egg("egg"), Pear("pear"), Capsule("capsule"), Dome("dome"), Cloud("cloud"), Twin("twin"), Box("box"),
+    Star("star"), Gem("gem"), Wedge("wedge"), Hex("hex"), Kite("kite"),
+}
+
+/** A decoration on the body. */
+public enum class Mark(public val key: String) {
+    None("none"), Belly("belly"), Spots("spots"), Stripes("stripes"), Cheeks("cheeks"), Gem("gem"),
+}
 public enum class EyeStyle(public val key: String) { Dot("dot"), Big("big") }
 public enum class Preset(public val key: String) { Gameboy("gameboy"), Mono("mono"), Amber("amber") }
 
@@ -64,6 +72,7 @@ public class Sprite internal constructor(
     public val text: String,
     public val traits: Traits,
     public val template: Template,
+    public val mark: Mark,
     public val eyeStyle: EyeStyle,
     public val anchors: Anchors,
     /** 32x32 palette indices, row by row, without a face. */
@@ -81,9 +90,18 @@ public class Sprite internal constructor(
         get() {
             val shape = when (template) {
                 Template.Blob -> "round"
+                Template.Egg -> "egg-shaped"
+                Template.Pear -> "pear-shaped"
+                Template.Capsule -> "capsule-shaped"
+                Template.Dome -> "dome-shaped"
+                Template.Cloud -> "cloudy"
+                Template.Twin -> "two-part"
                 Template.Box -> "boxy"
-                Template.Wedge -> "wedge-shaped"
+                Template.Star -> "star-shaped"
                 Template.Gem -> "crystal-shaped"
+                Template.Wedge -> "wedge-shaped"
+                Template.Hex -> "hexagonal"
+                Template.Kite -> "kite-shaped"
             }
             val e = traits.energy
             val mood = if (e < 35) "calm" else if (e < 65) "lively" else "hyper"

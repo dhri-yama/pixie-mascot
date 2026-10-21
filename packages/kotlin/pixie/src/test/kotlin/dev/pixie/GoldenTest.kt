@@ -35,6 +35,7 @@ class GoldenTest {
             check(hex(s.seed), e["seed"].asString, "seed")
             check(listOf(s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos), e["traits"].asJsonArray.map { it.asInt }, "traits")
             check(s.template.key, e["template"].asString, "template")
+            check(s.mark.key, e["mark"].asString, "mark")
             check(s.eyeStyle.key, e["eyeStyle"].asString, "eyeStyle")
             check(listOf(s.anchors.eyeY, s.anchors.eyeInner, s.anchors.mouthY), e["anchors"].asJsonArray.map { it.asInt }, "anchors")
             check(s.colors.drop(1).joinToString(","), e["colors"].asString, "colors")

@@ -31,3 +31,15 @@ onto 16..31. The body's last row is 25 (`GROUND`); bottom parts use rows 26..29;
 Body: `half = 8 + heft*5/100` columns, `bh = 17 - heft*5/100 - heightRoll` rows (heightRoll 0..2).
 Faces use a 6x6 eye box per eye, mouths and props in `spec/faces/faces.json`; a gaze step moves a pupil 2 pixels.
 Shade covers the bottom two rows of every downward-facing edge; the shine is three pixels; the outline is one pixel.
+
+### Body shapes, tails and marks (v1)
+`eff = clamp(roundness + int(15) - 7)`. `eff >= 50` picks from the soft list (blob, egg, pear, capsule, dome, cloud,
+twin, box), otherwise the sharp list (star, gem, wedge, hex, kite), using `shapeRoll % list.length`.
+Proportions come from `lean = clamp(heft + leanRoll)` with `leanRoll = int(61) - 30`:
+`half = clamp(7 + lean*6/100 + widthRoll - 1 + grow, 7, 13)`, `bh = clamp(18 - lean*7/100 - heightRoll + stretchRoll - 2, 10, 18)`;
+`grow` is 2 for star/gem/kite/hex, 1 for wedge, else 0. Each shape is a per-row half width (`rowWidths`); the cloud also
+loses 3 rows under every other group of three columns. Parts include a `tail` slot drawn after mirroring on the
+right side only. One marking per sprite: none, belly (light oval), spots, stripes (shade), cheeks and a forehead gem
+(accent, drawn once the eyes are placed). Narrow bodies (half < 9) get the small "dot" eyes.
+Draw order: traits(4), eff, shapeRoll, heightRoll, stretchRoll, widthRoll, leanRoll, chamferRoll, wedgeRoll,
+parts (top, side, bottom, top2, tail: 5 each), markRoll + 6, mutations (2 each), eyeInnerRoll, eyeStyleRoll, entryRoll.

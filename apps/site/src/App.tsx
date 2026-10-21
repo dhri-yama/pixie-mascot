@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import { generate, type AttentionMode, type Mood } from "@pixie/core";
+import { describe, generate, type AttentionMode, type Mood } from "@pixie/core";
 import { Mascot, type MascotHandle } from "@pixie/react";
 import { Playground } from "./Playground";
 import { PLATFORMS, snippet, type Platform } from "./snippets";
@@ -44,7 +44,7 @@ function Compare(): ReactNode {
         <div key={w} className="panel compare-card" data-mascot-ignore>
           <Mascot text={w} size={160} />
           <h3>{w}</h3>
-          <p className="caption">{s.template === "blob" ? "Round" : s.template === "box" ? "Boxy" : s.template === "wedge" ? "Wedge" : "Crystal"} body, {s.eyeStyle === "big" ? "big eyes" : "tiny eyes"}</p>
+          <p className="caption">{describe(s)}</p>
           <Meter label="round" value={s.traits.roundness} />
           <Meter label="energy" value={s.traits.energy} />
         </div>

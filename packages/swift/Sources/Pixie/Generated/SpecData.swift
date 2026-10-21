@@ -56,25 +56,39 @@ enum SpecData {
 
     static let parts: [PartDef] = [
         PartDef(id: "ears", slot: "top", tone: "soft", dx: [4, 6], rows: [".##.", "####", "####", "####"]),
+        PartDef(id: "bear", slot: "top", tone: "soft", dx: [6, 7, 8], rows: [".#", "##", "##"]),
+        PartDef(id: "rabbit", slot: "top", tone: "soft", dx: [3, 5], rows: ["##", "##", "##", "##", "##", "##"]),
         PartDef(id: "bud", slot: "top", tone: "soft", dx: [0], rows: ["aa", "aa", ".#", ".#"]),
+        PartDef(id: "sprout", slot: "top", tone: "soft", dx: [0, 2], rows: ["a.", "aa", ".#", ".#", ".#"]),
         PartDef(id: "bumps", slot: "top", tone: "soft", dx: [2, 4, 6], rows: ["##", "##"]),
         PartDef(id: "leaf", slot: "top", tone: "soft", dx: [3, 5], rows: ["#.", "##", "##"]),
         PartDef(id: "horns", slot: "top", tone: "sharp", dx: [3, 5, 7], rows: ["#..", "#..", "##.", "##.", "###", "###"]),
         PartDef(id: "spike", slot: "top", tone: "sharp", dx: [0, 2, 4], rows: [".#", ".#", ".#", "##", "##", "##"]),
         PartDef(id: "crest", slot: "top", tone: "sharp", dx: [2, 4, 6], rows: ["#.", "#.", "##", "##"]),
         PartDef(id: "fang", slot: "top", tone: "sharp", dx: [4, 6], rows: ["..#", ".##", "###", "###"]),
+        PartDef(id: "cat", slot: "top", tone: "sharp", dx: [5, 7], rows: ["#...", "##..", "###.", "####"]),
+        PartDef(id: "flame", slot: "top", tone: "sharp", dx: [0], rows: [".a", ".a", "aa", "aa", "#a"]),
         PartDef(id: "nubs", slot: "side", tone: "soft", dx: [], rows: ["##", "##"]),
         PartDef(id: "arms", slot: "side", tone: "soft", dx: [], rows: ["####", "####"]),
         PartDef(id: "paws", slot: "side", tone: "soft", dx: [], rows: ["###", "###", "###"]),
+        PartDef(id: "flippers", slot: "side", tone: "soft", dx: [], rows: ["..##", ".###", "####", "###."]),
         PartDef(id: "spines", slot: "side", tone: "sharp", dx: [], rows: ["#..", "##.", "###"]),
         PartDef(id: "fins", slot: "side", tone: "sharp", dx: [], rows: [".##", "###", "##."]),
         PartDef(id: "blades", slot: "side", tone: "sharp", dx: [], rows: ["#", "#", "#", "#"]),
+        PartDef(id: "wings", slot: "side", tone: "sharp", dx: [], rows: ["#...", "##..", "###.", "####", ".###", "..##"]),
         PartDef(id: "feet", slot: "bottom", tone: "soft", dx: [3, 5, 7], rows: ["####", "####"]),
         PartDef(id: "stubs", slot: "bottom", tone: "soft", dx: [3, 5, 7], rows: ["##", "##", "##", "##"]),
         PartDef(id: "paddles", slot: "bottom", tone: "soft", dx: [4, 6], rows: ["####", "####", "####"]),
         PartDef(id: "claws", slot: "bottom", tone: "sharp", dx: [3, 5, 7], rows: ["###", "##.", "#.."]),
         PartDef(id: "legs", slot: "bottom", tone: "sharp", dx: [3, 5, 7], rows: ["#", "#", "#", "#"]),
-        PartDef(id: "stilts", slot: "bottom", tone: "sharp", dx: [4, 6], rows: ["#", "#", "#", "#", "#", "#"])
+        PartDef(id: "stilts", slot: "bottom", tone: "sharp", dx: [4, 6], rows: ["#", "#", "#", "#", "#", "#"]),
+        PartDef(id: "stub", slot: "tail", tone: "soft", dx: [], rows: ["###", "###"]),
+        PartDef(id: "bushy", slot: "tail", tone: "soft", dx: [], rows: [".###", "####", "####", ".###"]),
+        PartDef(id: "whip", slot: "tail", tone: "soft", dx: [], rows: ["...#", "...#", "####"]),
+        PartDef(id: "curl", slot: "tail", tone: "soft", dx: [], rows: [".###", "#..#", "#..#", "####", "###."]),
+        PartDef(id: "bolt", slot: "tail", tone: "sharp", dx: [], rows: ["...##", "..##.", "####.", "..##.", ".##..", "##..."]),
+        PartDef(id: "spiketail", slot: "tail", tone: "sharp", dx: [], rows: ["...#", "..##", ".###", "####"]),
+        PartDef(id: "firetail", slot: "tail", tone: "sharp", dx: [], rows: ["...a", "..aa", ".aaa", "####", ".###"])
     ]
 
     static let white = "#f6f6f2"

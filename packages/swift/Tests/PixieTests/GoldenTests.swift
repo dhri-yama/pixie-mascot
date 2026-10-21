@@ -30,6 +30,7 @@ private func gridHash(_ g: [UInt8]) -> String { hex(fnv1a(g)) }
             check(hex(s.seed), e["seed"] as! String, "seed")
             check([s.traits.roundness, s.traits.heft, s.traits.energy, s.traits.chaos], e["traits"] as! [Int], "traits")
             check(s.template.rawValue, e["template"] as! String, "template")
+            check(s.mark.rawValue, e["mark"] as! String, "mark")
             check(s.eyeStyle.rawValue, e["eyeStyle"] as! String, "eyeStyle")
             check([s.anchors.eyeY, s.anchors.eyeInner, s.anchors.mouthY], e["anchors"] as! [Int], "anchors")
             check(s.colors.dropFirst().joined(separator: ","), e["colors"] as! String, "colors")

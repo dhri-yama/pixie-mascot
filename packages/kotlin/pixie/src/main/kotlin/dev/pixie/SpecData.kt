@@ -42,25 +42,39 @@ internal object SpecData {
 
     val parts: List<PartDef> = listOf(
         PartDef("ears", "top", "soft", listOf(4, 6), listOf(".##.", "####", "####", "####")),
+        PartDef("bear", "top", "soft", listOf(6, 7, 8), listOf(".#", "##", "##")),
+        PartDef("rabbit", "top", "soft", listOf(3, 5), listOf("##", "##", "##", "##", "##", "##")),
         PartDef("bud", "top", "soft", listOf(0), listOf("aa", "aa", ".#", ".#")),
+        PartDef("sprout", "top", "soft", listOf(0, 2), listOf("a.", "aa", ".#", ".#", ".#")),
         PartDef("bumps", "top", "soft", listOf(2, 4, 6), listOf("##", "##")),
         PartDef("leaf", "top", "soft", listOf(3, 5), listOf("#.", "##", "##")),
         PartDef("horns", "top", "sharp", listOf(3, 5, 7), listOf("#..", "#..", "##.", "##.", "###", "###")),
         PartDef("spike", "top", "sharp", listOf(0, 2, 4), listOf(".#", ".#", ".#", "##", "##", "##")),
         PartDef("crest", "top", "sharp", listOf(2, 4, 6), listOf("#.", "#.", "##", "##")),
         PartDef("fang", "top", "sharp", listOf(4, 6), listOf("..#", ".##", "###", "###")),
+        PartDef("cat", "top", "sharp", listOf(5, 7), listOf("#...", "##..", "###.", "####")),
+        PartDef("flame", "top", "sharp", listOf(0), listOf(".a", ".a", "aa", "aa", "#a")),
         PartDef("nubs", "side", "soft", listOf(), listOf("##", "##")),
         PartDef("arms", "side", "soft", listOf(), listOf("####", "####")),
         PartDef("paws", "side", "soft", listOf(), listOf("###", "###", "###")),
+        PartDef("flippers", "side", "soft", listOf(), listOf("..##", ".###", "####", "###.")),
         PartDef("spines", "side", "sharp", listOf(), listOf("#..", "##.", "###")),
         PartDef("fins", "side", "sharp", listOf(), listOf(".##", "###", "##.")),
         PartDef("blades", "side", "sharp", listOf(), listOf("#", "#", "#", "#")),
+        PartDef("wings", "side", "sharp", listOf(), listOf("#...", "##..", "###.", "####", ".###", "..##")),
         PartDef("feet", "bottom", "soft", listOf(3, 5, 7), listOf("####", "####")),
         PartDef("stubs", "bottom", "soft", listOf(3, 5, 7), listOf("##", "##", "##", "##")),
         PartDef("paddles", "bottom", "soft", listOf(4, 6), listOf("####", "####", "####")),
         PartDef("claws", "bottom", "sharp", listOf(3, 5, 7), listOf("###", "##.", "#..")),
         PartDef("legs", "bottom", "sharp", listOf(3, 5, 7), listOf("#", "#", "#", "#")),
-        PartDef("stilts", "bottom", "sharp", listOf(4, 6), listOf("#", "#", "#", "#", "#", "#"))
+        PartDef("stilts", "bottom", "sharp", listOf(4, 6), listOf("#", "#", "#", "#", "#", "#")),
+        PartDef("stub", "tail", "soft", listOf(), listOf("###", "###")),
+        PartDef("bushy", "tail", "soft", listOf(), listOf(".###", "####", "####", ".###")),
+        PartDef("whip", "tail", "soft", listOf(), listOf("...#", "...#", "####")),
+        PartDef("curl", "tail", "soft", listOf(), listOf(".###", "#..#", "#..#", "####", "###.")),
+        PartDef("bolt", "tail", "sharp", listOf(), listOf("...##", "..##.", "####.", "..##.", ".##..", "##...")),
+        PartDef("spiketail", "tail", "sharp", listOf(), listOf("...#", "..##", ".###", "####")),
+        PartDef("firetail", "tail", "sharp", listOf(), listOf("...a", "..aa", ".aaa", "####", ".###"))
     )
 
     const val white = "#f6f6f2"

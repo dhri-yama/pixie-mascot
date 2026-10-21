@@ -33,7 +33,13 @@ public enum Mood: String, CaseIterable, Sendable {
     }
 }
 
-public enum Template: String, Sendable { case blob, box, wedge, gem }
+public enum Template: String, Sendable {
+    case blob, egg, pear, capsule, dome, cloud, twin, box
+    case star, gem, wedge, hex, kite
+}
+
+/// A decoration on the body.
+public enum Mark: String, Sendable { case none, belly, spots, stripes, cheeks, gem }
 public enum EyeStyle: String, Sendable { case dot, big }
 public enum PresetName: String, Sendable { case gameboy, mono, amber }
 
@@ -78,6 +84,7 @@ public struct Sprite: Sendable {
     public let text: String
     public let traits: Traits
     public let template: Template
+    public let mark: Mark
     public let eyeStyle: EyeStyle
     public let anchors: Anchors
     /// 32x32 palette indices, row by row, without a face.
@@ -93,9 +100,18 @@ public struct Sprite: Sendable {
         let shape: String
         switch template {
         case .blob: shape = "round"
+        case .egg: shape = "egg-shaped"
+        case .pear: shape = "pear-shaped"
+        case .capsule: shape = "capsule-shaped"
+        case .dome: shape = "dome-shaped"
+        case .cloud: shape = "cloudy"
+        case .twin: shape = "two-part"
         case .box: shape = "boxy"
-        case .wedge: shape = "wedge-shaped"
+        case .star: shape = "star-shaped"
         case .gem: shape = "crystal-shaped"
+        case .wedge: shape = "wedge-shaped"
+        case .hex: shape = "hexagonal"
+        case .kite: shape = "kite-shaped"
         }
         let e = traits.energy
         let mood = e < 35 ? "calm" : e < 65 ? "lively" : "hyper"
