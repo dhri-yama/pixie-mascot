@@ -4,7 +4,7 @@ The algorithm version is separate from package semver. A shipped version never c
 
 | Version | Status | Notes |
 |---|---|---|
-| 1 | **draft** | Still being tuned. Output may change until marked frozen (M4 sign-off). |
+| 1 | **draft** | Implemented in TypeScript, Swift and Kotlin and identical across them. Waiting for the owner to review the art (lab and site) and sign off; only then mark it frozen. |
 
 Rules once a version is frozen: hashing, normalization, trait rules, parts, palettes, rounding,
 and rng call order must not change. Any such change is a new version with its own golden entries.

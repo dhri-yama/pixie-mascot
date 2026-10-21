@@ -120,7 +120,7 @@ function Docs(): ReactNode {
     react: "pnpm add @pixie/react",
     web: "pnpm add @pixie/core",
     swift: `.package(url: "https://github.com/you/pixie", from: "0.1.0")`,
-    kotlin: `implementation("dev.pixie:pixie:0.1.0")`,
+    kotlin: `implementation("dev.pixie:pixie-compose:0.1.0")`,
     node: "pnpm add @pixie/core",
   };
   const code = `${install[platform]}\n\n${snippet(platform, "your text")}`;

@@ -1,8 +1,158 @@
 # Pixie
 
-Type a word or a sentence, get a deterministic retro pixel-art mascot. The text decides the
-look: soft sounds make round mascots, sharp sounds make spiky ones. Same text and same
-version always give the same mascot.
+Type a word or a sentence, get a retro pixel-art mascot. The **sound** of the text decides the look:
+soft sounds (`bubbanbbebb`) make round, cute creatures; sharp sounds (`jsakkkwaakiyy`) make spiky ones.
+Same text and same algorithm version give the same mascot on every platform.
 
-Status: planning. See [PLAN.md](PLAN.md) for the design and milestones, and
-[CLAUDE.md](CLAUDE.md) for the rules the codebase follows.
+Mascots have six moods (neutral, happy, sad, surprised, thinking, sleepy), blink, bob, follow the pointer
+some of the time and look away the rest, fall asleep when ignored, and can react to the UI around them.
+
+> Status: working and tested, **not published yet**. Package names (`@pixie/core`, `@pixie/react`,
+> `dev.pixie`, the Swift package) are placeholders until a registry check. Algorithm v1 is still a
+> **draft**: its output may change until it is frozen (see [spec/VERSIONS.md](spec/VERSIONS.md)).
+
+## Use it
+
+### React
+
+```tsx
+import { Mascot } from "@pixie/react";
+
+<Mascot text={user.name} size={64} />                       // alive: blinks, follows the pointer
+<Mascot text="helper" mood={loading ? "thinking" : "happy"} />
+<Mascot text="helper" auto />                               // reacts to hover, click, typing, form errors
+<Mascot text="static" animated={false} />                   // one still frame, also fine on the server
+```
+
+Hints for `auto`: `data-mascot="worried"` on any element makes the mascot take that mood while the pointer is
+over it; `data-mascot-ignore` on an element or ancestor opts it out. A focused password field makes the mascot
+shut its eyes.
+
+### Web component, any framework
+
+```js
+import { definePixieElement } from "@pixie/core/dom";
+definePixieElement();
+```
+
+```html
+<pixie-mascot text="bubba" size="96"></pixie-mascot>
+<pixie-mascot text="bubba" mood="happy" auto></pixie-mascot>
+```
+
+A script-tag build (`dist/pixie.global.js`) defines the element and `window.Pixie` for pages without a bundler.
+
+### Node, SVG, emails, READMEs
+
+```ts
+import { generate, toSVG, describe } from "@pixie/core";
+
+const sprite = generate("bubbanbbebb");
+const svg = toSVG(sprite.grid, sprite.colors, { size: 96, label: describe(sprite) });
+```
+
+### SwiftUI (iOS 16+, macOS 13+)
+
+```swift
+import Pixie
+
+PixieView(text: "bubbanbbebb").frame(width: 96, height: 96)
+PixieView(text: "helper", mood: isLoading ? .thinking : .happy)
+
+let pixie = PixieController(text: "helper")           // drive it from code, or make views matter to it
+PixieView(text: "helper", controller: pixie)
+Button("Delete") { }.pixieTarget(pixie, mood: .sad)
+```
+
+Add the package from this repository's URL (`Package.swift` is at the root).
+
+### Compose (Kotlin)
+
+```kotlin
+import dev.pixie.Mood
+import dev.pixie.compose.PixieMascot
+
+PixieMascot(text = "bubbanbbebb", modifier = Modifier.size(96.dp))
+PixieMascot(text = "helper", mood = if (loading) Mood.Thinking else Mood.Happy)
+```
+
+`dev.pixie:pixie` is the plain Kotlin/JVM core (generator, behavior, SVG); `dev.pixie:pixie-compose` adds the
+composable.
+
+### Options
+
+Only a few, on purpose. Users do not tune the look.
+
+| Option | Meaning |
+|---|---|
+| `text` | Any string. It is normalized first (Unicode NFC, ASCII lowercase, whitespace collapsed, 128 code points) |
+| `mood` | Set by your app. Leave unset and the mascot decides |
+| `animated` | `false` gives one still frame |
+| `attention` | `always` / `sometimes` / `never` follow the pointer |
+| `palette` | `gameboy`, `mono`, `amber`, or the curated default |
+| `version` | Pin the algorithm (generator functions only) |
+
+## How it works
+
+1. Normalize the text and hash it (FNV-1a) into a seed for a small integer-only PRNG (mulberry32).
+2. Each letter carries a bit of roundness, sharpness, weight and rarity ([spec/letters.json](spec/letters.json)).
+   The totals become four traits 0..100: **roundness, heft, energy, chaos** ([spec/traits.md](spec/traits.md)).
+3. The traits pick a 16x16 body (blob, box, wedge or gem), parts (ears or horns, arms or spines, feet or claws),
+   eyes, and a palette from a curated pool. The left half is built and mirrored; chaos breaks the symmetry.
+4. A behavior state machine ([spec/behavior.md](spec/behavior.md)) adds blinking, bobbing, attention
+   (follow, wander, focus, asleep) and moods. It is pure and seeded, so it is testable and portable.
+
+Phonetics only: meaning is not used (`razor wire` sounds round, so it looks round). A meaning-aware mode is a
+possible v2.
+
+## Repo layout
+
+```
+spec/            the contract: rules, art data, golden.json
+packages/core    TypeScript generator, behavior, SVG, DOM glue, <pixie-mascot>
+packages/react   <Mascot />
+packages/swift   Swift port + SwiftUI view        (Package.swift at the repo root)
+packages/kotlin  Kotlin/JVM port + Compose view   (Gradle build)
+apps/lab         internal page for judging the art
+apps/site        public website
+scripts/         golden file, variety measurement, native data generator
+```
+
+Swift and Kotlin never import the TypeScript. All three implementations are checked against
+[spec/golden.json](spec/golden.json): 500 inputs with seed, traits, shape, anchors, colors, grid hashes for every
+mood and a gaze+blink+bob pose, SVG hashes, plus six scripted behavior traces. The art lives in `spec/` as JSON
+and is turned into Swift and Kotlin source by `pnpm gen:native`.
+
+## Develop
+
+```bash
+pnpm install
+pnpm test                 # TypeScript: core, DOM (jsdom), React, golden, native-data sync
+pnpm typecheck
+pnpm build
+pnpm --filter @pixie/lab dev    # http://localhost:5174, judge the art
+pnpm --filter @pixie/site dev   # http://localhost:5175, the website
+
+swift test                      # from the repo root
+cd packages/kotlin && gradle test
+
+pnpm golden:update        # draft versions only; see CLAUDE.md
+pnpm gen:native           # after editing anything in spec/
+pnpm variety              # collision rate over 100k random strings
+```
+
+Quality numbers for v1 are recorded in [spec/VERSIONS.md](spec/VERSIONS.md).
+
+## Known limits
+
+- Algorithm v1 is a draft. Freeze it (and announce the version policy) before storing avatars long term.
+- Sound only, no meaning. English-style letters drive the traits; other scripts fall back to the hash.
+- 16x16 gives about 0.5% collisions among 100k distinct random strings.
+- Swift: verified on macOS (golden, behavior, off-screen SwiftUI render). The iOS code paths compile only
+  against macOS here; the iOS SDK was not available.
+- Kotlin: verified on desktop JVM with an off-screen Compose render. The Android target was not built (no Android SDK).
+- CI workflows are written but have not run on a real runner yet.
+
+## License
+
+MIT

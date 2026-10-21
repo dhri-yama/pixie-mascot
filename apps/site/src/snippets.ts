@@ -37,8 +37,8 @@ PixieView(text: ${t})
 // reacts to your app
 PixieView(text: ${t}, mood: isLoading ? .thinking : .happy)`;
     case "kotlin":
-      return `import dev.pixie.PixieMascot
-import dev.pixie.Mood
+      return `import dev.pixie.Mood
+import dev.pixie.compose.PixieMascot
 
 PixieMascot(text = ${t}, modifier = Modifier.size(96.dp))
 
