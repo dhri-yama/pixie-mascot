@@ -1,0 +1,19 @@
+{
+  "name": "@pixie/core",
+  "version": "0.0.0",
+  "description": "Deterministic pixel-art mascots from text",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./dom": { "types": "./dist/dom.d.ts", "import": "./dist/dom.js" }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
