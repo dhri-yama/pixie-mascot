@@ -37,10 +37,10 @@ importers:
 
   apps/site:
     dependencies:
-      '@pixie/core':
+      pixie-mascot:
         specifier: workspace:*
         version: link:../../packages/core
-      '@pixie/react':
+      pixie-mascot-react:
         specifier: workspace:*
         version: link:../../packages/react
       react:
@@ -64,7 +64,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@pixie/core':
+      pixie-mascot:
         specifier: workspace:*
         version: link:../core
     devDependencies:

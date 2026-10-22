@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
-import { describe, generate, type AttentionMode, type Mood } from "@pixie/core";
-import { Mascot, type MascotHandle } from "@pixie/react";
+import { describe, generate, type AttentionMode, type Mood } from "pixie-mascot";
+import { Mascot, type MascotHandle } from "pixie-mascot-react";
 import { Playground } from "./Playground";
 import { PLATFORMS, snippet, type Platform } from "./snippets";
 import { CopyButton, Meter, Section } from "./ui";
@@ -145,11 +145,11 @@ function Street(): ReactNode {
 function Docs(): ReactNode {
   const [platform, setPlatform] = useState<Platform>("react");
   const install: Record<Platform, string> = {
-    react: "pnpm add @pixie/react",
-    web: "pnpm add @pixie/core",
-    swift: `.package(url: "https://github.com/you/pixie", from: "0.1.0")`,
-    kotlin: `implementation("dev.pixie:pixie-compose:0.1.0")`,
-    node: "pnpm add @pixie/core",
+    react: "pnpm add pixie-mascot-react",
+    web: "pnpm add pixie-mascot",
+    swift: `.package(url: "https://github.com/dhri-yama/pixie-mascot", from: "0.1.0")`,
+    kotlin: `implementation("io.github.dhri-yama:pixie-compose:0.1.0")`,
+    node: "pnpm add pixie-mascot",
   };
   const code = `${install[platform]}\n\n${snippet(platform, "your text")}`;
   return (
@@ -162,7 +162,7 @@ function Docs(): ReactNode {
         </div>
         <pre className="code"><code>{code}</code></pre>
         <div className="row end"><CopyButton text={code} /></div>
-        <p className="note">Packages are not published yet. Use them from this repository.</p>
+        <p className="note">Not on the registries yet. Until then, use the packages from the <a href="https://github.com/dhri-yama/pixie-mascot">GitHub repository</a>.</p>
       </div>
       <div className="cards">
         <article className="panel">

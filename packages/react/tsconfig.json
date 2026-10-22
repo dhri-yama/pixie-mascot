@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "paths": { "@pixie/core": ["../core/src/index.ts"], "@pixie/core/dom": ["../core/src/dom.ts"] }
+    "paths": { "pixie-mascot": ["../core/src/index.ts"], "pixie-mascot/dom": ["../core/src/dom.ts"] }
   },
   "include": ["src", "test"]
 }

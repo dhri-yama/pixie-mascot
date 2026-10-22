@@ -1,6 +1,6 @@
-// Regenerates spec/golden.json. v1 is a draft until VERSIONS.md says frozen; after that, only add
-// a new version's entries, never rewrite an old one.
-import { writeFileSync } from "node:fs";
+// Regenerates spec/golden.json. Refuses while VERSIONS.md says v1 is frozen: a frozen version is never rewritten,
+// a new version gets its own entries.
+import { readFileSync, writeFileSync } from "node:fs";
 import { MOODS, compose, createBehavior, generate, toSVG, type AttentionMode, type Grid } from "../packages/core/src";
 import { fnv1a, utf8 } from "../packages/core/src/hash";
 import { createRng } from "../packages/core/src/rng";
@@ -121,6 +121,10 @@ export function behaviorTrace(c: (typeof BEHAVIOR_CASES)[number]): { hash: strin
 }
 
 if (process.argv[1]?.endsWith("golden.ts")) {
+  if (/\|\s*1\s*\|\s*\*\*frozen\*\*/.test(readFileSync(new URL("../spec/VERSIONS.md", import.meta.url), "utf8"))) {
+    console.error("Algorithm v1 is frozen (spec/VERSIONS.md): refusing to rewrite spec/golden.json. Revert the change that altered the output.");
+    process.exit(1);
+  }
   const out = {
     version: 1,
     count: 0,

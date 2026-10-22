@@ -1,7 +1,7 @@
 {
-  "name": "@pixie/core",
+  "name": "pixie-mascot",
   "version": "0.0.0",
-  "description": "Deterministic pixel-art mascots from text",
+  "description": "Deterministic pixel-art mascots from text: a 32x32 sprite generator with moods, motion and a web component",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -26,5 +26,28 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "unpkg": "./dist/pixie.global.js",
-  "jsdelivr": "./dist/pixie.global.js"
+  "jsdelivr": "./dist/pixie.global.js",
+  "author": "dhri-yama",
+  "homepage": "https://github.com/dhri-yama/pixie-mascot#readme",
+  "bugs": {
+    "url": "https://github.com/dhri-yama/pixie-mascot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhri-yama/pixie-mascot.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "pixel-art",
+    "mascot",
+    "avatar",
+    "generator",
+    "deterministic",
+    "web-component",
+    "sprite",
+    "svg"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

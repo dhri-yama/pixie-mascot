@@ -4,7 +4,7 @@ The algorithm version is separate from package semver. A shipped version never c
 
 | Version | Status | Notes |
 |---|---|---|
-| 1 | **draft** | Implemented in TypeScript, Swift and Kotlin and identical across them. Waiting for the owner to review the art (lab and site) and sign off; only then mark it frozen. |
+| 1 | **frozen** | Frozen on 2026-10-22 after the owner signed off on the look. Identical in TypeScript, Swift and Kotlin (spec/golden.json). From now on output for existing inputs never changes; improvements are a new version. |
 
 Rules once a version is frozen: hashing, normalization, trait rules, parts, palettes, rounding,
 and rng call order must not change. Any such change is a new version with its own golden entries.
@@ -21,4 +21,4 @@ and cobra shapes have fewer degrees of freedom).
 
 `spec/golden.json` holds 500 inputs with seed, traits, template, eye style, anchors, colors, grid
 hashes (neutral, per mood, and one gaze+blink+bob pose). Every package must reproduce it exactly.
-Regenerate with `pnpm golden:update` only while a version is a draft.
+v1 is frozen, so `pnpm golden:update` refuses to run for it. A new version gets its own entries and its own guard.

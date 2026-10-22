@@ -1,4 +1,4 @@
-import { MOODS, compose, createBehavior, describe, generate, normalize, toSVG, toSmoothSVG, type Behavior, type Mood, type PresetName } from "@pixie/core";
+import { MOODS, compose, createBehavior, describe, generate, normalize, toSVG, toSmoothSVG, type Behavior, type Mood, type PresetName } from "pixie-mascot";
 
 const DEFAULT_WORDS = `
 bubbanbbebb, jsakkkwaakiyy, bubba, mumu, moon, noodle, bubble, loom, woolly, mellow, boom, mum

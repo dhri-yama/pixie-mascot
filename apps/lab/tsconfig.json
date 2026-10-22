@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "paths": { "@pixie/core": ["../../packages/core/src/index.ts"] } },
+  "compilerOptions": { "paths": { "pixie-mascot": ["../../packages/core/src/index.ts"] } },
   "include": ["src"]
 }

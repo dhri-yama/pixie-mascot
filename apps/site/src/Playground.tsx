@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { MOODS, compose, describe, generate, toSVG, toSmoothSVG, type Mood, type PresetName } from "@pixie/core";
-import { Mascot } from "@pixie/react";
+import { MOODS, compose, describe, generate, toSVG, toSmoothSVG, type Mood, type PresetName } from "pixie-mascot";
+import { Mascot } from "pixie-mascot-react";
 import { PLATFORMS, snippet, type Platform } from "./snippets";
 import { CopyButton, Meter } from "./ui";
 

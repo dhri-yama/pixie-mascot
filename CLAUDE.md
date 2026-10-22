@@ -7,8 +7,9 @@ usage in [README.md](README.md). Read PLAN.md before making structural changes.
 ## Status
 
 All milestones built and tested (TypeScript, React, web component, website, Swift, Kotlin).
-**Algorithm v1 is still a draft** (`spec/VERSIONS.md`): it has not been signed off by the owner, so it is
-not frozen. Not published to any registry. CI workflows exist but have never run on a real runner.
+**Algorithm v1 is frozen** (`spec/VERSIONS.md`, signed off by the owner on 2026-10-22): its output for existing
+inputs must never change. Package names are `pixie-mascot` and `pixie-mascot-react`; the repo is
+`github.com/dhri-yama/pixie-mascot`. Not yet published to any registry. CI workflows exist but have never run on a real runner.
 
 ## Invariants (never break these)
 
@@ -71,12 +72,12 @@ pnpm install
 pnpm test                   # all TS tests: core, DOM, React, golden, native-data sync
 pnpm typecheck
 pnpm build                  # core + react (also the script-tag bundle)
-pnpm --filter @pixie/site build
-pnpm --filter @pixie/lab dev    # :5174
-pnpm --filter @pixie/site dev   # :5175
+pnpm --filter pixie-site build
+pnpm --filter pixie-lab dev    # :5174
+pnpm --filter pixie-site dev   # :5175
 swift test                  # repo root. Uses Swift Testing (see the quirk below if the macro plugin is "not found")
 (cd packages/kotlin && gradle test)
-pnpm golden:update          # rewrite spec/golden.json (draft versions only)
+pnpm golden:update          # refuses for a frozen version; only for a new, unfrozen version
 pnpm gen:native             # regenerate Swift/Kotlin data after editing spec/
 pnpm variety [count]        # collision rate
 ```
@@ -90,11 +91,11 @@ pnpm variety [count]        # collision rate
 - Check `date` is sane before the first commit of a session; commit dates come from the system clock.
   (The owner's `~/.zshrc` once exported fake `GIT_AUTHOR_DATE`/`GIT_COMMITTER_DATE`; it was removed. If commits
   show an odd date, check `env | grep GIT_`.)
-- **Output changes fail the golden tests on purpose.** Never "fix" that by regenerating `golden.json` once a
-  version is frozen. While v1 is a draft you may run `pnpm golden:update`, but then all three languages must
-  pass the new file before you commit, and say so in the commit message.
-- Changing anything in `spec/` means: update the spec text, run `pnpm gen:native`, run `pnpm golden:update` (draft
-  only), then run TS, Swift and Kotlin tests.
+- **Output changes fail the golden tests on purpose.** v1 is frozen: never "fix" a failure by regenerating
+  `golden.json`; revert the change instead. Real improvements are a new algorithm version (`v2`) with its own
+  entries, a new guard, and all three languages passing before you commit.
+- Changing anything in `spec/` means: update the spec text, run `pnpm gen:native`, and for a **new** version add its golden entries,
+  then run TS, Swift and Kotlin tests. Changing `spec/` for v1 is not allowed.
 - New art (parts, faces, palettes) goes into `spec/` as data first.
 - Keep the core small. Prefer deleting code to adding abstraction.
 - Public API changes need a README update in the same change.

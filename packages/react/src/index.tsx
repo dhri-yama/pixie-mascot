@@ -2,11 +2,11 @@ import {
   forwardRef, useEffect, useImperativeHandle, useRef, useState,
   type CSSProperties,
 } from "react";
-import { compose, describe, generate, toSVG, toSmoothSVG, type Mood, type Sprite } from "@pixie/core";
-import { mountMascot, type MountedMascot, type MountOptions } from "@pixie/core/dom";
+import { compose, describe, generate, toSVG, toSmoothSVG, type Mood, type Sprite } from "pixie-mascot";
+import { mountMascot, type MountedMascot, type MountOptions } from "pixie-mascot/dom";
 
-export type { Mood, Sprite, PresetName, AttentionMode } from "@pixie/core";
-export type { MountOptions } from "@pixie/core/dom";
+export type { Mood, Sprite, PresetName, AttentionMode } from "pixie-mascot";
+export type { MountOptions } from "pixie-mascot/dom";
 
 export interface MascotProps extends MountOptions {
   className?: string;

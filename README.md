@@ -9,16 +9,16 @@ in a way that fits their body: round ones bounce and squash, tall ones waddle, c
 slither. They follow the pointer some of the time and look away the rest, jump when startled, fall asleep when
 ignored, and can react to the UI around them.
 
-> Status: working and tested, **not published yet**. Package names (`@pixie/core`, `@pixie/react`,
-> `dev.pixie`, the Swift package) are placeholders until a registry check. Algorithm v1 is still a
-> **draft**: its output may change until it is frozen (see [spec/VERSIONS.md](spec/VERSIONS.md)).
+> Status: working and tested, not published to a registry yet. npm packages: `pixie-mascot` and
+> `pixie-mascot-react`. Algorithm v1 is **frozen**: the same text always gives the same mascot (see
+> [spec/VERSIONS.md](spec/VERSIONS.md)).
 
 ## Use it
 
 ### React
 
 ```tsx
-import { Mascot } from "@pixie/react";
+import { Mascot } from "pixie-mascot-react";
 
 <Mascot text={user.name} size={64} />                       // alive: blinks, follows the pointer
 <Mascot text="helper" mood={loading ? "thinking" : "happy"} />
@@ -33,7 +33,7 @@ shut its eyes.
 ### Web component, any framework
 
 ```js
-import { definePixieElement } from "@pixie/core/dom";
+import { definePixieElement } from "pixie-mascot/dom";
 definePixieElement();
 ```
 
@@ -47,7 +47,7 @@ A script-tag build (`dist/pixie.global.js`) defines the element and `window.Pixi
 ### Node, SVG, emails, READMEs
 
 ```ts
-import { generate, toSVG, describe } from "@pixie/core";
+import { generate, toSVG, describe } from "pixie-mascot";
 
 const sprite = generate("bubbanbbebb");
 const svg = toSVG(sprite.grid, sprite.colors, { size: 96, label: describe(sprite) });
@@ -78,7 +78,7 @@ PixieMascot(text = "bubbanbbebb", modifier = Modifier.size(96.dp))
 PixieMascot(text = "helper", mood = if (loading) Mood.Thinking else Mood.Happy)
 ```
 
-`dev.pixie:pixie` is the plain Kotlin/JVM core (generator, behavior, SVG); `dev.pixie:pixie-compose` adds the
+`io.github.dhri-yama:pixie` is the plain Kotlin/JVM core (generator, behavior, SVG); `io.github.dhri-yama:pixie-compose` adds the
 composable.
 
 ### Options
@@ -139,13 +139,13 @@ pnpm install
 pnpm test                 # TypeScript: core, DOM (jsdom), React, golden, native-data sync
 pnpm typecheck
 pnpm build
-pnpm --filter @pixie/lab dev    # http://localhost:5174, judge the art
-pnpm --filter @pixie/site dev   # http://localhost:5175, the website
+pnpm --filter pixie-lab dev    # http://localhost:5174, judge the art
+pnpm --filter pixie-site dev   # http://localhost:5175, the website
 
 swift test                      # from the repo root
 cd packages/kotlin && gradle test
 
-pnpm golden:update        # draft versions only; see CLAUDE.md
+pnpm golden:update        # refuses for the frozen v1; see CLAUDE.md
 pnpm gen:native           # after editing anything in spec/
 pnpm variety              # collision rate over 100k random strings
 ```
@@ -154,7 +154,7 @@ Quality numbers for v1 are recorded in [spec/VERSIONS.md](spec/VERSIONS.md).
 
 ## Known limits
 
-- Algorithm v1 is a draft. Freeze it (and announce the version policy) before storing avatars long term.
+- Algorithm v1 is frozen. Anything that would change an existing mascot ships as a new algorithm version, so stored `{text, version}` pairs stay valid.
 - The `smooth` look exists only in the TypeScript/web package. It is a renderer on top of the same 32x32 grid, uses floating point, and is not part of the golden file. Swift and Kotlin draw square pixels until it is ported.
 - Sound only, no meaning. English-style letters drive the traits; other scripts fall back to the hash.
 - 32x32 gives about 0.04% collisions among 100k distinct random strings (35 of them shared a look with another).

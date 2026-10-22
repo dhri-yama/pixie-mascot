@@ -12,7 +12,7 @@ export function snippet(platform: Platform, text: string): string {
   const t = JSON.stringify(text);
   switch (platform) {
     case "react":
-      return `import { Mascot } from "@pixie/react";
+      return `import { Mascot } from "pixie-mascot-react";
 
 <Mascot text=${t} size={96} />
 
@@ -22,7 +22,7 @@ export function snippet(platform: Platform, text: string): string {
 // reacts to the page: hover, click, typing, form errors
 <Mascot text=${t} auto />`;
     case "web":
-      return `import { definePixieElement } from "@pixie/core/dom";
+      return `import { definePixieElement } from "pixie-mascot/dom";
 definePixieElement();
 
 // anywhere in your HTML
@@ -45,7 +45,7 @@ PixieMascot(text = ${t}, modifier = Modifier.size(96.dp))
 // reacts to your app
 PixieMascot(text = ${t}, mood = if (loading) Mood.Thinking else Mood.Happy)`;
     case "node":
-      return `import { generate, toSVG, describe } from "@pixie/core";
+      return `import { generate, toSVG, describe } from "pixie-mascot";
 
 const sprite = generate(${t});
 const svg = toSVG(sprite.grid, sprite.colors, {

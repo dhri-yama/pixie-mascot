@@ -12,7 +12,7 @@ Tick a box only when the thing works and its tests pass. One logical change per 
 | Meaning-aware mode | Not in v1. Phonetics only. Core has no network and no lexicon. | v2 |
 | Grid | 32x32 (changed from 16x16: it looked too pixelated) | A use case needs even finer art |
 | License | MIT | Before publish |
-| Package names | `@pixie/core`, `@pixie/react` (workspace names; registry availability unchecked) | Before publish |
+| Package names | `pixie-mascot`, `pixie-mascot-react` (workspace names; registry availability unchecked) | Before publish |
 | Palette presets | `gameboy`, `mono`, `amber` | Later |
 | Algorithm version | `1`, marked **draft** until M4 is signed off, then frozen | n/a |
 
@@ -60,7 +60,7 @@ The golden file hashes the **base grid with the neutral face**.
 - [x] `spec/golden.json` (>= 500 inputs) + generator script + test
 - [x] Property tests: repeatable, never throws, no NaN, grid always 32x32, indices in range
 - [x] Variety script: 100k random strings, unique-sprite rate printed. Record in `spec/VERSIONS.md`
-- [ ] Mark v1 frozen only after the owner reviews the art and accepts the variety numbers (still **draft**)
+- [x] Mark v1 frozen after the owner reviews the art and accepts the variety numbers (frozen 2026-10-22)
 
 ### M5 Expressions + behavior
 - [x] `spec/faces/*.json`: eyes x 2 styles x 6 moods + blink, mouths, props
@@ -73,7 +73,7 @@ The golden file hashes the **base grid with the neutral face**.
 - [x] `packages/core` `./dom` entry: pointer tracking, delegated auto-reaction, `data-mascot` hints,
       `prefers-reduced-motion`
 - [x] `<pixie-mascot>` web component
-- [x] `@pixie/react`: `<Mascot text mood size animated palette lookAt auto />`, SSR-safe
+- [x] `pixie-mascot-react`: `<Mascot text mood size animated palette lookAt auto />`, SSR-safe
 - [x] Component tests (jsdom)
 
 ### M7 Website (`apps/site`)
@@ -106,14 +106,14 @@ The golden file hashes the **base grid with the neutral face**.
 
 ## Deviations from the plan, and what is still open
 
-- v1 is **not frozen**. It needs the owner's sign-off on the art first.
+- v1 was frozen on 2026-10-22 after the owner signed off on the art.
 - The golden file also holds SVG hashes and six scripted behavior traces; the lone-surrogate input became U+FFFD
   (Swift strings cannot hold one). The TS unit tests still cover lone surrogates.
 - The behavior engine was ported to Swift and Kotlin too (not just the generator), because native mascots need
   the same life; it is proven by the behavior traces.
 - Swift tests use Swift Testing, not XCTest (XCTest is missing from Command Line Tools).
 - The Kotlin core is Kotlin/JVM, not Multiplatform. Compose is Compose Multiplatform with a desktop JVM target.
-- Not verified: iOS compile, Android build, CI on real runners, publishing (`@pixie/*` names are unchecked).
+- Not verified: iOS compile, Android build, CI on real runners, publishing (names chosen: `pixie-mascot`, `pixie-mascot-react`; not published yet).
 - Not built: meaning-aware mode, hosted SVG endpoint, extra moods (angry, love, ...), body squash/lean animation.
 
 ## Grid change: 16x16 -> 32x32 (2026-10-22, after review)

@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   target: "es2022",
-  external: ["react", "@pixie/core", "@pixie/core/dom"],
+  external: ["react", "pixie-mascot", "pixie-mascot/dom"],
 });

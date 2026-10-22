@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-group = "dev.pixie"
+group = "io.github.dhri-yama"
 version = "0.1.0"
 
 kotlin {

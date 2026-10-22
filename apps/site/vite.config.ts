@@ -9,9 +9,9 @@ export default defineConfig({
   // Use the library sources directly so the site always shows the code in this repo.
   resolve: {
     alias: {
-      "@pixie/core/dom": p("../../packages/core/src/dom.ts"),
-      "@pixie/core": p("../../packages/core/src/index.ts"),
-      "@pixie/react": p("../../packages/react/src/index.tsx"),
+      "pixie-mascot/dom": p("../../packages/core/src/dom.ts"),
+      "pixie-mascot": p("../../packages/core/src/index.ts"),
+      "pixie-mascot-react": p("../../packages/react/src/index.tsx"),
     },
   },
   server: { port: 5175, strictPort: true },
