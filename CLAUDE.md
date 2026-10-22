@@ -38,8 +38,8 @@ motion style from the sprite's body shape, so it needs `template` (all three por
 
 ## Walking (web only)
 
-`walk` / `walkAround(host)` in `dom.ts` moves the mascot's element around the inside edge of its positioned parent with CSS
-transforms (flipping with `scaleX(-1)` to face the way it goes). It is host behavior, not part of the sprite, the pose or the
+`walk` / `walkAround(host)` in `dom.ts` moves the mascot's element around the inside edge of its positioned parent (loop) or to
+random spots and clicks (roam, seeded by the sprite) with CSS transforms (flipping with `scaleX(-1)` to face the way it goes). It is host behavior, not part of the sprite, the pose or the
 golden file, and is **not ported** to Swift/Kotlin (native apps move views with their own layout and animation APIs).
 
 ## Smooth rendering (web only, experimental)

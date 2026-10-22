@@ -5,6 +5,7 @@ import { createBehavior, type AttentionMode, type Behavior, type Vec } from "./b
 import { compose } from "./compose";
 import { describe, generate } from "./generate";
 import { toSVG, toSmoothSVG } from "./render";
+import { createRng } from "./rng";
 import type { Mood, Pose, PresetName, Sprite } from "./types";
 import { MOODS } from "./types";
 
@@ -21,7 +22,7 @@ export interface MountOptions {
   /** React to hover, click, focus, typing and form events anywhere on the page. Default false. */
   auto?: boolean;
   /** Walk around the inside edge of the positioned parent, clockwise, pausing at the corners. Needs `animated`. */
-  walk?: boolean | WalkOptions;
+  walk?: boolean | "loop" | "roam" | WalkOptions;
   /** Draw rounded vector shapes instead of square pixels. Same sprite, softer look. Default false. */
   smooth?: boolean;
   /** Frames per second. Default 10. */
@@ -35,6 +36,10 @@ export interface MountOptions {
 }
 
 export interface WalkOptions {
+  /** loop: around the edge, clockwise (default). roam: to random spots, and wherever you click. */
+  mode?: "loop" | "roam";
+  /** Seeds the roaming spots, so a mascot always roams the same way. Default 1. */
+  seed?: number;
   /** Pixels per second. Default 70. */
   speed?: number;
   /** Pause at each corner, in ms. Default 600. */
@@ -51,6 +56,7 @@ export function walkAround(host: HTMLElement, options: WalkOptions = {}): () => 
   const parent = (host.offsetParent as HTMLElement | null) ?? host.parentElement!;
   const win = host.ownerDocument.defaultView!;
   Object.assign(host.style, { position: "absolute", left: "0px", top: "0px" });
+  if (options.mode === "roam") return roam(host, parent, win, speed, options.seed ?? 1);
   let raf = 0, last = 0, leg = 0, dist = 0, pause = 0;
   const frame = (t: number): void => {
     const dt = last ? Math.min(t - last, 100) : 0;
@@ -74,6 +80,53 @@ export function walkAround(host: HTMLElement, options: WalkOptions = {}): () => 
   raf = win.requestAnimationFrame(frame);
   return () => {
     win.cancelAnimationFrame(raf);
+    host.style.transform = "";
+  };
+}
+
+/** Wander: walk straight to a random spot, pause, pick another. A click or tap in the parent sends it there. */
+function roam(host: HTMLElement, parent: HTMLElement, win: Window, speed: number, seed: number): () => void {
+  const rng = createRng(seed);
+  const bounds = (): [number, number] => [
+    Math.max(0, parent.clientWidth - host.offsetWidth),
+    Math.max(0, parent.clientHeight - host.offsetHeight),
+  ];
+  let [w, h] = bounds();
+  let x = 0, y = h, tx = x, ty = y, face = 1, pause = 0, last = 0, raf = 0;
+  const click = (e: MouseEvent): void => {
+    const r = parent.getBoundingClientRect();
+    [w, h] = bounds();
+    tx = Math.min(w, Math.max(0, e.clientX - r.left - host.offsetWidth / 2));
+    ty = Math.min(h, Math.max(0, e.clientY - r.top - host.offsetHeight / 2));
+    pause = 0;
+  };
+  parent.addEventListener("pointerdown", click);
+  const frame = (t: number): void => {
+    const dt = last ? Math.min(t - last, 100) : 0;
+    last = t;
+    [w, h] = bounds();
+    if (pause > 0) pause -= dt;
+    else {
+      const dx = tx - x, dy = ty - y, d = Math.hypot(dx, dy), step = (speed * dt) / 1000;
+      if (d <= step) {
+        x = tx;
+        y = ty;
+        pause = 800 + rng.int(1700);
+        tx = rng.int(w + 1);
+        ty = rng.int(h + 1);
+      } else {
+        x += (dx / d) * step;
+        y += (dy / d) * step;
+        if (Math.abs(dx) > 2) face = dx < 0 ? -1 : 1;
+      }
+    }
+    host.style.transform = `translate(${x}px, ${y}px) scaleX(${face})`;
+    raf = win.requestAnimationFrame(frame);
+  };
+  raf = win.requestAnimationFrame(frame);
+  return () => {
+    win.cancelAnimationFrame(raf);
+    parent.removeEventListener("pointerdown", click);
     host.style.transform = "";
   };
 }
@@ -187,7 +240,10 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
       detachers.push(() => doc.documentElement.removeEventListener("pointerleave", leave));
     }
     if (opts.auto) attachAuto();
-    if (opts.walk) detachers.push(walkAround(container, opts.walk === true ? {} : opts.walk));
+    if (opts.walk) {
+      const w = opts.walk;
+      detachers.push(walkAround(container, { seed: sprite.seed, ...(typeof w === "object" ? w : { mode: w === "roam" ? "roam" : "loop" }) }));
+    }
 
     lastTime = Date.now();
     timer = setInterval(() => {
@@ -333,7 +389,7 @@ export function definePixieElement(tag = "pixie-mascot"): CustomElementConstruct
         attention: (g("attention") as AttentionMode | null) ?? "sometimes",
         animated: g("animated") !== "false",
         auto: this.hasAttribute("auto") && g("auto") !== "false",
-        walk: this.hasAttribute("walk") && g("walk") !== "false",
+        walk: this.hasAttribute("walk") && g("walk") !== "false" ? (g("walk") === "roam" ? "roam" : true) : false,
         smooth: this.hasAttribute("smooth") && g("smooth") !== "false",
         label: g("label") ?? undefined,
       };

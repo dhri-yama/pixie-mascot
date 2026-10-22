@@ -308,3 +308,73 @@ describe("walkAround", () => {
     expect(street.style.transform).toBe("");
   });
 });
+
+describe("walkAround roam mode", () => {
+  const setup = (): { street: HTMLElement; walker: HTMLElement } => {
+    const street = document.createElement("div");
+    const walker = document.createElement("span");
+    street.append(walker);
+    document.body.append(street);
+    for (const [el, w, h] of [[street, 300, 200], [walker, 100, 100]] as const) {
+      for (const k of ["clientWidth", "offsetWidth"]) Object.defineProperty(el, k, { value: w, configurable: true });
+      for (const k of ["clientHeight", "offsetHeight"]) Object.defineProperty(el, k, { value: h, configurable: true });
+    }
+    Object.defineProperty(walker, "offsetParent", { value: street, configurable: true });
+    return { street, walker };
+  };
+  const at = (el: HTMLElement): { x: number; y: number; flip: number } => {
+    const m = /translate\((-?[\d.]+)px, (-?[\d.]+)px\) scaleX\((-?1)\)/.exec(el.style.transform)!;
+    return { x: Number(m[1]), y: Number(m[2]), flip: Number(m[3]) };
+  };
+
+  it("wanders to different spots, always inside the parent, and always the same way for the same seed", async () => {
+    const { walkAround } = await import("../src/dom");
+    const trail = (seed: number): string[] => {
+      const { walker } = setup();
+      const stop = walkAround(walker, { mode: "roam", seed, speed: 200 });
+      const out: string[] = [];
+      for (let i = 0; i < 400; i++) {
+        tick(50);
+        const p = at(walker);
+        expect(p.x).toBeGreaterThanOrEqual(0);
+        expect(p.x).toBeLessThanOrEqual(200);
+        expect(p.y).toBeGreaterThanOrEqual(0);
+        expect(p.y).toBeLessThanOrEqual(100);
+        out.push(`${Math.round(p.x)},${Math.round(p.y)}`);
+      }
+      stop();
+      return out;
+    };
+    const a = trail(7);
+    expect(new Set(a).size).toBeGreaterThan(40);
+    expect(trail(7)).toEqual(a);
+    expect(trail(8)).not.toEqual(a);
+  });
+
+  it("a click sends it there and it faces that way", async () => {
+    const { walkAround } = await import("../src/dom");
+    const { street, walker } = setup();
+    const stop = walkAround(walker, { mode: "roam", seed: 3, speed: 500 });
+    tick(50);
+    street.dispatchEvent(new MouseEvent("pointerdown", { clientX: 250, clientY: 50, bubbles: true }));
+    tick(1000);
+    expect(at(walker)).toMatchObject({ x: 200, y: 0 }); // clamped so the whole mascot stays inside
+    street.dispatchEvent(new MouseEvent("pointerdown", { clientX: 60, clientY: 90, bubbles: true }));
+    tick(100);
+    expect(at(walker).flip).toBe(-1);
+    stop();
+    expect(walker.style.transform).toBe("");
+  });
+
+  it("is started by walk: roam and by the walk attribute", () => {
+    const { street } = setup();
+    const m = mountMascot(street, { text: "bubba", size: 100, sleepAfterMs: 0, walk: "roam" });
+    mounted.push(m);
+    tick(300);
+    expect(street.style.transform).toMatch(/translate/);
+    definePixieElement();
+    const el = document.createElement("pixie-mascot");
+    el.setAttribute("walk", "roam");
+    expect(el.getAttribute("walk")).toBe("roam");
+  });
+});

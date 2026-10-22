@@ -117,22 +117,27 @@ function Demo(): ReactNode {
 
 function Street(): ReactNode {
   const [walking, setWalking] = useState(true);
+  const [mode, setMode] = useState<"loop" | "roam">("roam");
   const [who, setWho] = useState("wanderer");
   return (
     <div className="panel street-card" data-mascot-ignore>
       <div className="street">
         <div className="block">the block</div>
-        <Mascot key={who} text={who} size={64} walk={walking} />
+        <Mascot key={who} text={who} size={64} walk={walking ? mode : false} />
       </div>
       <div className="row">
         <button type="button" className={`chip ${walking ? "on" : ""}`} onClick={() => setWalking(!walking)}>
           {walking ? "walking: on" : "walking: off"}
         </button>
+        {(["loop", "roam"] as const).map((m) => (
+          <button key={m} type="button" className={`chip ${mode === m ? "on" : ""}`} onClick={() => setMode(m)}>{m}</button>
+        ))}
+        <span className="label">who</span>
         {["wanderer", "sssnake", "bubba", "kick", "moon"].map((w) => (
           <button key={w} type="button" className={`chip ${who === w ? "on" : ""}`} onClick={() => setWho(w)}>{w}</button>
         ))}
       </div>
-      <p className="note">It walks around the block, pausing at each corner and facing the way it goes. Shapes keep their own style: round ones hop along, snakes slither.</p>
+      <p className="note">Loop walks around the block, pausing at each corner. Roam wanders to random spots, and goes wherever you click in the street. It faces the way it goes, and shapes keep their own style: round ones hop along, snakes slither.</p>
     </div>
   );
 }
