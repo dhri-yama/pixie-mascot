@@ -246,3 +246,65 @@ describe("<pixie-mascot>", () => {
     expect(definePixieElement()).toBe(definePixieElement());
   });
 });
+
+describe("walkAround", () => {
+  const size = (el: HTMLElement, w: number, h: number): void => {
+    Object.defineProperty(el, "clientWidth", { value: w, configurable: true });
+    Object.defineProperty(el, "clientHeight", { value: h, configurable: true });
+    Object.defineProperty(el, "offsetWidth", { value: w, configurable: true });
+    Object.defineProperty(el, "offsetHeight", { value: h, configurable: true });
+  };
+  const place = (): { street: HTMLElement; walker: HTMLElement } => {
+    const street = document.createElement("div");
+    const walker = document.createElement("span");
+    street.append(walker);
+    document.body.append(street);
+    size(street, 300, 200);
+    size(walker, 100, 100);
+    Object.defineProperty(walker, "offsetParent", { value: street, configurable: true });
+    return { street, walker };
+  };
+  const pos = (el: HTMLElement): { x: number; y: number; flip: number } => {
+    const m = /translate\((-?[\d.]+)px, (-?[\d.]+)px\) scaleX\((-?1)\)/.exec(el.style.transform)!;
+    return { x: Number(m[1]), y: Number(m[2]), flip: Number(m[3]) };
+  };
+
+  it("walks the edge clockwise, pausing at corners and facing the way it goes", async () => {
+    const { walker } = place();
+    const { walkAround } = await import("../src/dom");
+    const stop = walkAround(walker, { speed: 100, pauseMs: 500 });
+    tick(16);
+    expect(pos(walker)).toMatchObject({ x: 0, y: 100, flip: 1 }); // starts bottom-left
+    tick(1000); // 100px/s along the 200px bottom edge
+    expect(pos(walker).x).toBeGreaterThan(80);
+    expect(pos(walker).y).toBe(100);
+    tick(1100 + 500 + 1200); // finish the bottom edge, pause, then climb the right side (100px)
+    expect(pos(walker).x).toBe(200);
+    tick(600 + 500 + 1000); // finish the climb, pause, then head left along the top
+    expect(pos(walker).y).toBe(0);
+    expect(pos(walker).flip).toBe(-1);
+    stop();
+    expect(walker.style.transform).toBe("");
+  });
+
+  it("stops at corners for the pause", async () => {
+    const { walker } = place();
+    const { walkAround } = await import("../src/dom");
+    const stop = walkAround(walker, { speed: 1000, pauseMs: 2000 });
+    tick(500); // reaches the bottom-right corner almost at once
+    const atCorner = pos(walker);
+    tick(1000);
+    expect(pos(walker)).toEqual(atCorner);
+    stop();
+  });
+
+  it("is switched on with the walk option and off again with update", () => {
+    const { street } = place();
+    const m = mountMascot(street, { text: "bubba", size: 100, sleepAfterMs: 0, walk: true });
+    mounted.push(m);
+    tick(300);
+    expect(street.style.transform).toMatch(/translate/);
+    m.update({ walk: false });
+    expect(street.style.transform).toBe("");
+  });
+});

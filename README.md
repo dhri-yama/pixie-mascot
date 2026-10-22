@@ -90,6 +90,7 @@ Only a few, on purpose. Users do not tune the look.
 | `text` | Any string. It is normalized first (Unicode NFC, ASCII lowercase, whitespace collapsed, 128 code points) |
 | `mood` | Set by your app. Leave unset and the mascot decides |
 | `animated` | `false` gives one still frame |
+| `walk` | Web only: walk around the inside edge of the positioned parent (a street around a block), pausing at corners and flipping to face the way it goes (`<Mascot walk />`, `walk` attribute, or `walkAround(el)`) |
 | `smooth` | Web only for now: draw rounded vector shapes instead of square pixels (`<Mascot smooth />`, `smooth` attribute, `toSmoothSVG`) |
 | `attention` | `always` / `sometimes` / `never` follow the pointer |
 | `palette` | `gameboy`, `mono`, `amber`, or the curated default |

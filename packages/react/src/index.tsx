@@ -54,15 +54,15 @@ export const Mascot = forwardRef<MascotHandle, MascotProps>(function Mascot(prop
     };
   }, []);
 
-  const { text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth } = options;
+  const { text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth, walk } = options;
   const first = useRef(true);
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
-    mounted.current?.update({ text, size, palette, mood: mood ?? null, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth });
-  }, [text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth]);
+    mounted.current?.update({ text, size, palette, mood: mood ?? null, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth, walk });
+  }, [text, size, palette, mood, attention, animated, auto, fps, label, reducedMotion, sleepAfterMs, smooth, walk]);
 
   useImperativeHandle(ref, () => ({
     get sprite() {

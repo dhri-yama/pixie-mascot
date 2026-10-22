@@ -20,6 +20,8 @@ export interface MountOptions {
   animated?: boolean;
   /** React to hover, click, focus, typing and form events anywhere on the page. Default false. */
   auto?: boolean;
+  /** Walk around the inside edge of the positioned parent, clockwise, pausing at the corners. Needs `animated`. */
+  walk?: boolean | WalkOptions;
   /** Draw rounded vector shapes instead of square pixels. Same sprite, softer look. Default false. */
   smooth?: boolean;
   /** Frames per second. Default 10. */
@@ -30,6 +32,50 @@ export interface MountOptions {
   reducedMotion?: boolean;
   /** Idle time before sleeping. 0 never sleeps. Default 30000. */
   sleepAfterMs?: number;
+}
+
+export interface WalkOptions {
+  /** Pixels per second. Default 70. */
+  speed?: number;
+  /** Pause at each corner, in ms. Default 600. */
+  pauseMs?: number;
+}
+
+/**
+ * Moves `host` around the inside edge of its positioned parent (think: walking around a block that fills the middle),
+ * clockwise from the bottom-left corner, pausing at each corner and facing the way it goes. Returns a stop function.
+ * shortcut: it follows the parent's size each frame but not a path around obstacles; use a bigger parent for a bigger block.
+ */
+export function walkAround(host: HTMLElement, options: WalkOptions = {}): () => void {
+  const { speed = 70, pauseMs = 600 } = options;
+  const parent = (host.offsetParent as HTMLElement | null) ?? host.parentElement!;
+  const win = host.ownerDocument.defaultView!;
+  Object.assign(host.style, { position: "absolute", left: "0px", top: "0px" });
+  let raf = 0, last = 0, leg = 0, dist = 0, pause = 0;
+  const frame = (t: number): void => {
+    const dt = last ? Math.min(t - last, 100) : 0;
+    last = t;
+    const w = Math.max(0, parent.clientWidth - host.offsetWidth);
+    const h = Math.max(0, parent.clientHeight - host.offsetHeight);
+    const corners = [[0, h], [w, h], [w, 0], [0, 0]] as const; // bottom-left, bottom-right, top-right, top-left
+    const a = corners[leg]!, b = corners[(leg + 1) % 4]!;
+    const len = Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]) || 1;
+    if (pause > 0) pause -= dt;
+    else if ((dist += (speed * dt) / 1000) >= len) {
+      dist = 0;
+      leg = (leg + 1) % 4;
+      pause = pauseMs;
+    }
+    const f = Math.min(dist / len, 1);
+    const x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f;
+    host.style.transform = `translate(${x}px, ${y}px) scaleX(${b[0] < a[0] ? -1 : 1})`;
+    raf = win.requestAnimationFrame(frame);
+  };
+  raf = win.requestAnimationFrame(frame);
+  return () => {
+    win.cancelAnimationFrame(raf);
+    host.style.transform = "";
+  };
 }
 
 export interface MountedMascot {
@@ -141,6 +187,7 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
       detachers.push(() => doc.documentElement.removeEventListener("pointerleave", leave));
     }
     if (opts.auto) attachAuto();
+    if (opts.walk) detachers.push(walkAround(container, opts.walk === true ? {} : opts.walk));
 
     lastTime = Date.now();
     timer = setInterval(() => {
@@ -234,7 +281,7 @@ export function mountMascot(container: HTMLElement, options: MountOptions): Moun
     },
     update(next) {
       const rebuild = next.text !== undefined || next.palette !== undefined;
-      const restart = next.animated !== undefined || next.auto !== undefined || next.attention !== undefined || next.fps !== undefined;
+      const restart = next.animated !== undefined || next.auto !== undefined || next.walk !== undefined || next.attention !== undefined || next.fps !== undefined;
       opts = { ...opts, ...next };
       if (next.mood !== undefined) appMood = next.mood;
       if (rebuild || next.reducedMotion !== undefined || next.sleepAfterMs !== undefined) {
@@ -272,7 +319,7 @@ export function definePixieElement(tag = "pixie-mascot"): CustomElementConstruct
   if (existing) return existing;
 
   class PixieElement extends HTMLElement {
-    static observedAttributes = ["text", "size", "palette", "mood", "attention", "animated", "auto", "label", "smooth"];
+    static observedAttributes = ["text", "size", "palette", "mood", "attention", "animated", "auto", "label", "smooth", "walk"];
     private mascot?: MountedMascot;
 
     private read(): MountOptions {
@@ -286,6 +333,7 @@ export function definePixieElement(tag = "pixie-mascot"): CustomElementConstruct
         attention: (g("attention") as AttentionMode | null) ?? "sometimes",
         animated: g("animated") !== "false",
         auto: this.hasAttribute("auto") && g("auto") !== "false",
+        walk: this.hasAttribute("walk") && g("walk") !== "false",
         smooth: this.hasAttribute("smooth") && g("smooth") !== "false",
         label: g("label") ?? undefined,
       };

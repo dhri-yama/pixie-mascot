@@ -115,6 +115,28 @@ function Demo(): ReactNode {
   );
 }
 
+function Street(): ReactNode {
+  const [walking, setWalking] = useState(true);
+  const [who, setWho] = useState("wanderer");
+  return (
+    <div className="panel street-card" data-mascot-ignore>
+      <div className="street">
+        <div className="block">the block</div>
+        <Mascot key={who} text={who} size={64} walk={walking} />
+      </div>
+      <div className="row">
+        <button type="button" className={`chip ${walking ? "on" : ""}`} onClick={() => setWalking(!walking)}>
+          {walking ? "walking: on" : "walking: off"}
+        </button>
+        {["wanderer", "sssnake", "bubba", "kick", "moon"].map((w) => (
+          <button key={w} type="button" className={`chip ${who === w ? "on" : ""}`} onClick={() => setWho(w)}>{w}</button>
+        ))}
+      </div>
+      <p className="note">It walks around the block, pausing at each corner and facing the way it goes. Shapes keep their own style: round ones hop along, snakes slither.</p>
+    </div>
+  );
+}
+
 function Docs(): ReactNode {
   const [platform, setPlatform] = useState<Platform>("react");
   const install: Record<Platform, string> = {
@@ -206,6 +228,8 @@ export function App(): ReactNode {
 
         <Section id="demo" kicker="awareness" title="It reacts to your UI">
           <Demo />
+          <h3 className="sub">And it can walk</h3>
+          <Street />
         </Section>
 
         <Section id="docs" kicker="use it" title="One line in your project">

@@ -36,6 +36,12 @@ mirrored. The pose carries `lift, dx, lean, squash, wave, amp` (integers) and `a
 motion tables live in `spec/motion.json` and reach Swift and Kotlin through `pnpm gen:native`. The behavior engine picks a
 motion style from the sprite's body shape, so it needs `template` (all three ports and the DOM glue pass it).
 
+## Walking (web only)
+
+`walk` / `walkAround(host)` in `dom.ts` moves the mascot's element around the inside edge of its positioned parent with CSS
+transforms (flipping with `scaleX(-1)` to face the way it goes). It is host behavior, not part of the sprite, the pose or the
+golden file, and is **not ported** to Swift/Kotlin (native apps move views with their own layout and animation APIs).
+
 ## Smooth rendering (web only, experimental)
 
 `toSmoothSVG` and the `smooth` option redraw the same 32x32 grid as rounded vector shapes (trace each color
